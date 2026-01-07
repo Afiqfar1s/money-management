@@ -16,6 +16,7 @@ class BalanceAdjustmentController extends Controller
         }
 
         $validated = $request->validate([
+            'voucher_no' => 'nullable|string|max:255|unique:balance_adjustments,voucher_no',
             'amount' => 'required|numeric|min:0.01',
             'note' => 'nullable|string',
             'adjusted_at' => 'nullable|date',
@@ -26,6 +27,7 @@ class BalanceAdjustmentController extends Controller
 
             BalanceAdjustment::create([
                 'debtor_id' => $debtor->id,
+                'voucher_no' => $validated['voucher_no'],
                 'amount' => $validated['amount'],
                 'note' => $validated['note'],
                 'adjusted_at' => $validated['adjusted_at'] ?? now(),

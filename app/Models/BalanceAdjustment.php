@@ -12,6 +12,7 @@ class BalanceAdjustment extends Model
 
     protected $fillable = [
         'debtor_id',
+        'voucher_no',
         'amount',
         'note',
         'adjusted_at',
