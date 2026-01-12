@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -111,5 +112,15 @@ class User extends Authenticatable
     public function debtors()
     {
         return $this->hasMany(Debtor::class);
+    }
+
+    /**
+     * Companies this user can access (Company Representative access)
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class)
+            ->withTimestamps()
+            ->withPivot(['role']);
     }
 }

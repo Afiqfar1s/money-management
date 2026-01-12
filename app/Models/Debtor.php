@@ -13,6 +13,7 @@ class Debtor extends Model
 
     protected $fillable = [
         'user_id',
+        'company_id',
         'name',
         'description',
         'starting_outstanding',
@@ -40,6 +41,11 @@ class Debtor extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function payments(): HasMany
