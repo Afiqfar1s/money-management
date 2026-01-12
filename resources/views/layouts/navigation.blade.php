@@ -15,6 +15,28 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(auth()->check() && auth()->user()->isAdmin())
+                        <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
+                            {{ __('Companies') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(auth()->check() && !auth()->user()->isAdmin())
+                        <div class="flex items-center">
+                            <form method="POST" action="{{ route('companies.switch') }}" class="flex items-center gap-2">
+                                @csrf
+                                <label class="text-sm text-gray-600">Company</label>
+                                <select name="company_id" onchange="this.form.submit()" class="text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @foreach(auth()->user()->companies()->orderBy('companies.name')->get() as $company)
+                                        <option value="{{ $company->id }}" {{ (string) session('current_company_id') === (string) $company->id ? 'selected' : '' }}>
+                                            {{ $company->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +92,28 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(auth()->check() && auth()->user()->isAdmin())
+                <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
+                    {{ __('Companies') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(auth()->check() && !auth()->user()->isAdmin())
+                <div class="px-4 pt-2">
+                    <form method="POST" action="{{ route('companies.switch') }}" class="space-y-2">
+                        @csrf
+                        <label class="block text-sm text-gray-600">Company</label>
+                        <select name="company_id" onchange="this.form.submit()" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach(auth()->user()->companies()->orderBy('companies.name')->get() as $company)
+                                <option value="{{ $company->id }}" {{ (string) session('current_company_id') === (string) $company->id ? 'selected' : '' }}>
+                                    {{ $company->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

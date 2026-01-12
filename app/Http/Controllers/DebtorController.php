@@ -10,25 +10,31 @@ class DebtorController extends Controller
 {
     public function index(Request $request)
     {
-        // Check permission for viewing debtors
         $user = auth()->user();
-        
-        // Admin sees all debtors, users with view_all_debtors permission see all, otherwise see only their own
-        if ($user->isAdmin() || $user->hasPermission('view_all_debtors')) {
-            $query = Debtor::query();
-        } else {
-            if (!$user->hasPermission('view_own_debtors')) {
-                abort(403, 'You do not have permission to view debtors.');
-            }
-            $query = Debtor::where('user_id', auth()->id());
+        $companyId = (int) session('current_company_id');
+
+        // Company middleware guarantees a valid selection for non-admin users.
+        // For admin, if no company selected, send them to selector.
+        if ($user->isAdmin() && $companyId <= 0) {
+            return redirect()->route('companies.select');
         }
+
+        $query = Debtor::query()->where('company_id', $companyId);
 
         // Search filter
         if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  // Search by payment voucher number
+                  ->orWhereHas('payments', function ($query) use ($search) {
+                      $query->where('voucher_no', 'like', "%{$search}%");
+                  })
+                  // Search by balance adjustment voucher number
+                  ->orWhereHas('balanceAdjustments', function ($query) use ($search) {
+                      $query->where('voucher_no', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -41,28 +47,22 @@ class DebtorController extends Controller
             }
         }
 
-        $debtors = $query->with('user')
+    $debtors = $query
             ->withMax('payments', 'paid_at')
             ->orderBy('name', 'asc')
             ->paginate(20)
             ->withQueryString();
 
         // Compute summary (ignore filters)
-        if ($user->isAdmin() || $user->hasPermission('view_all_debtors')) {
-            $summaryQuery = Debtor::query();
-        } else {
-            $summaryQuery = Debtor::where('user_id', auth()->id());
-        }
+    $summaryQuery = Debtor::query()->where('company_id', $companyId);
         
         $total_outstanding = $summaryQuery->sum('outstanding');
         $total_debtors = $summaryQuery->count();
         
         $paymentsQuery = DB::table('payments')
             ->join('debtors', 'payments.debtor_id', '=', 'debtors.id');
-        
-        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors')) {
-            $paymentsQuery->where('debtors.user_id', auth()->id());
-        }
+
+    $paymentsQuery->where('debtors.company_id', $companyId);
         
         $total_paid = $paymentsQuery->sum('payments.amount');
 
@@ -71,18 +71,12 @@ class DebtorController extends Controller
 
     public function create()
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->hasPermission('create_debtors')) {
-            abort(403, 'You do not have permission to create debtors.');
-        }
-        
         return view('debtors.create');
     }
 
     public function store(Request $request)
     {
-        if (!auth()->user()->isAdmin() && !auth()->user()->hasPermission('create_debtors')) {
-            abort(403, 'You do not have permission to create debtors.');
-        }
+    $companyId = (int) session('current_company_id');
         
         $validated = $request->validate([
             'debtor_type' => 'required|in:individual,company',
@@ -109,6 +103,7 @@ class DebtorController extends Controller
         DB::transaction(function () use ($validated) {
             $debtor = Debtor::create([
                 'user_id' => auth()->id(),
+                'company_id' => (int) session('current_company_id'),
                 'debtor_type' => $validated['debtor_type'],
                 'name' => $validated['name'],
                 'description' => $validated['description'],
@@ -142,21 +137,16 @@ class DebtorController extends Controller
             }
         });
 
-        $debtor = Debtor::where('user_id', auth()->id())->latest()->first();
+    $debtor = Debtor::where('company_id', $companyId)->latest()->first();
 
         return redirect()->route('debtors.show', $debtor)->with('success', 'Debtor created successfully.');
     }
 
     public function show(Debtor $debtor)
     {
-        $user = auth()->user();
-
-        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors') && $debtor->user_id !== auth()->id()) {
+        $companyId = (int) session('current_company_id');
+        if ((int) $debtor->company_id !== $companyId) {
             abort(404);
-        }
-
-        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors') && !$user->hasPermission('view_own_debtors')) {
-            abort(403, 'You do not have permission to view debtors.');
         }
 
         $payments = $debtor->payments()
@@ -176,17 +166,8 @@ class DebtorController extends Controller
 
     public function edit(Debtor $debtor)
     {
-        $user = auth()->user();
-
-        if ($user->isAdmin() || $user->hasPermission('edit_all_debtors')) {
-            return view('debtors.edit', compact('debtor'));
-        }
-
-        if (!$user->hasPermission('edit_own_debtors')) {
-            abort(403, 'You do not have permission to edit debtors.');
-        }
-
-        if ($debtor->user_id !== auth()->id()) {
+    $companyId = (int) session('current_company_id');
+    if ((int) $debtor->company_id !== $companyId) {
             abort(404);
         }
 
@@ -195,16 +176,9 @@ class DebtorController extends Controller
 
     public function update(Request $request, Debtor $debtor)
     {
-        $user = auth()->user();
-
-        if (!($user->isAdmin() || $user->hasPermission('edit_all_debtors'))) {
-            if (!$user->hasPermission('edit_own_debtors')) {
-                abort(403, 'You do not have permission to edit debtors.');
-            }
-
-            if ($debtor->user_id !== auth()->id()) {
-                abort(404);
-            }
+        $companyId = (int) session('current_company_id');
+        if ((int) $debtor->company_id !== $companyId) {
+            abort(404);
         }
 
         $validated = $request->validate([
@@ -262,16 +236,9 @@ class DebtorController extends Controller
 
     public function refresh(Debtor $debtor)
     {
-        $user = auth()->user();
-
-        if (!($user->isAdmin() || $user->hasPermission('edit_all_debtors'))) {
-            if (!$user->hasPermission('edit_own_debtors')) {
-                abort(403, 'You do not have permission to refresh debtors.');
-            }
-
-            if ($debtor->user_id !== auth()->id()) {
-                abort(404);
-            }
+        $companyId = (int) session('current_company_id');
+        if ((int) $debtor->company_id !== $companyId) {
+            abort(404);
         }
 
         DB::transaction(function () use ($debtor) {
@@ -289,16 +256,8 @@ class DebtorController extends Controller
     {
         $count = 0;
 
-        $user = auth()->user();
-
-        if ($user->isAdmin() || $user->hasPermission('view_all_debtors')) {
-            $query = Debtor::query();
-        } else {
-            if (!$user->hasPermission('view_own_debtors')) {
-                abort(403, 'You do not have permission to view debtors.');
-            }
-            $query = Debtor::where('user_id', auth()->id());
-        }
+    $companyId = (int) session('current_company_id');
+    $query = Debtor::query()->where('company_id', $companyId);
 
         $query->chunkById(100, function ($debtors) use (&$count) {
             foreach ($debtors as $debtor) {
@@ -318,29 +277,8 @@ class DebtorController extends Controller
 
     public function destroy(Debtor $debtor)
     {
-        $user = auth()->user();
-
-        // Admins can delete any debtor
-        if ($user->isAdmin()) {
-            $debtor->delete();
-
-            return redirect()->route('debtors.index')
-                ->with('success', 'Debtor deleted successfully.');
-        }
-
-        // Non-admin users: must have permission + ownership (unless granted delete_all_debtors)
-        if ($user->hasPermission('delete_all_debtors')) {
-            $debtor->delete();
-
-            return redirect()->route('debtors.index')
-                ->with('success', 'Debtor deleted successfully.');
-        }
-
-        if (!$user->hasPermission('delete_own_debtors')) {
-            abort(403, 'You do not have permission to delete debtors.');
-        }
-
-        if ($debtor->user_id !== auth()->id()) {
+    $companyId = (int) session('current_company_id');
+    if ((int) $debtor->company_id !== $companyId) {
             abort(404);
         }
 

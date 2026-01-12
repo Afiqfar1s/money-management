@@ -44,59 +44,57 @@
     </div>
 
     <!-- Summary Box - Horizontal Side by Side -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between gap-6">
             <!-- Total Outstanding -->
-            <div class="flex items-center gap-4 flex-1">
+            <div class="flex items-center gap-3 flex-1">
                 <div class="flex-shrink-0 w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Outstanding</p>
-                    <p class="text-2xl font-bold text-gray-900">RM {{ number_format((float)$total_outstanding, 2) }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">Amount to collect</p>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Outstanding</p>
+                    <p class="text-2xl font-bold text-gray-900 truncate">RM {{ number_format((float)$total_outstanding, 2) }}</p>
+                    <p class="text-xs text-gray-500">Amount to pay</p>
                 </div>
             </div>
 
             <!-- Divider -->
-            <div class="hidden md:block w-px h-16 bg-gray-200"></div>
+            <div class="w-px h-16 bg-gray-200"></div>
 
-            <!-- Total Collected -->
-            <div class="flex items-center gap-4 flex-1">
+            <!-- Total Payment -->
+            <div class="flex items-center gap-3 flex-1">
                 <div class="flex-shrink-0 w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Collected</p>
-                    <p class="text-2xl font-bold text-gray-900">RM {{ number_format((float)$total_paid, 2) }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        {{ $total_outstanding > 0 ? number_format(($total_paid / ($total_paid + $total_outstanding)) * 100, 1) : 100 }}% collection rate
-                    </p>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Payment</p>
+                    <p class="text-2xl font-bold text-gray-900 truncate">RM {{ number_format((float)$total_paid, 2) }}</p>
+                    <p class="text-xs text-gray-500">Total payments recorded</p>
                 </div>
             </div>
 
             <!-- Divider -->
-            <div class="hidden md:block w-px h-16 bg-gray-200"></div>
+            <div class="w-px h-16 bg-gray-200"></div>
 
             <!-- Total Debtors -->
-            <div class="flex items-center gap-4 flex-1">
+            <div class="flex items-center gap-3 flex-1">
                 <div class="flex-shrink-0 w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Debtors</p>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Debtors</p>
                     @php
                         $settledCount = $debtors->where('outstanding', '<=', 0)->count();
                         $owingCount = $total_debtors - $settledCount;
                     @endphp
                     <p class="text-2xl font-bold text-gray-900">{{ $total_debtors }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ $owingCount }} owing, {{ $settledCount }} settled</p>
+                    <p class="text-xs text-gray-500">{{ $owingCount }} owing, {{ $settledCount }} settled</p>
                 </div>
             </div>
         </div>
@@ -111,7 +109,7 @@
                     type="text" 
                     x-model="searchQuery" 
                     @input.debounce.300ms="search()"
-                    placeholder="Search debtor by name or description..." 
+                    placeholder="Search by debtor name, description, or voucher number..." 
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base">
             </div>
             
@@ -157,66 +155,68 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Debtor Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Type</th>
-                        @if(auth()->user()->isAdmin())
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Owner</th>
-                        @endif
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Outstanding</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Last Payment</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-tight">Debtor Name</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-tight">Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-tight">Description</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-tight">Outstanding</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-tight">Last Payment</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-tight">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="debtors-tbody">
                     @forelse ($debtors as $debtor)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $debtor->name }}</div>
-                                @if($debtor->ic_number)
-                                <div class="text-xs text-gray-500">IC: {{ $debtor->ic_number }}</div>
-                                @endif
+                            <td class="px-4 py-3">
+                                <a href="{{ route('debtors.show', $debtor) }}" class="block hover:text-indigo-600">
+                                    <div class="text-sm font-medium text-gray-900">{{ $debtor->name }}</div>
+                                    @if($debtor->ic_number)
+                                    <div class="text-xs text-gray-500">IC: {{ $debtor->ic_number }}</div>
+                                    @endif
+                                </a>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-3 text-center whitespace-nowrap">
                                 @if ($debtor->debtor_type === 'individual')
-                                    <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
+                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">
                                         Individual
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-800">
+                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-800">
                                         Company
                                     </span>
                                 @endif
                             </td>
-                            @if(auth()->user()->isAdmin())
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $debtor->user->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $debtor->user->email }}</div>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $debtor->description }}">
+                                    {{ $debtor->description ?: '-' }}
+                                </div>
                             </td>
-                            @endif
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 truncate max-w-xs">{{ $debtor->description ?: '-' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 @if ($debtor->outstanding > 0)
                                     <span class="text-sm font-semibold text-red-600">RM {{ number_format((float)$debtor->outstanding, 2) }}</span>
                                 @else
                                     <span class="text-sm font-semibold text-green-600">Settled</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                 @if ($debtor->payments_max_paid_at)
                                     {{ \Carbon\Carbon::parse($debtor->payments_max_paid_at)->format('d M Y') }}
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end gap-3">
+                            <td class="px-4 py-3 text-center whitespace-nowrap text-sm font-medium">
+                                <div class="inline-flex gap-3">
                                     <a href="{{ route('debtors.show', $debtor) }}" 
                                        class="text-indigo-600 hover:text-indigo-900 font-medium"
                                        title="View details">
                                         View
+                                    </a>
+
+                                    <a href="{{ route('reports.debtor.payment-history', $debtor) }}" 
+                                       class="text-green-600 hover:text-green-900 font-medium"
+                                       title="Download payment history PDF"
+                                       target="_blank">
+                                        Download
                                     </a>
 
                                     @php
@@ -252,7 +252,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                 </svg>

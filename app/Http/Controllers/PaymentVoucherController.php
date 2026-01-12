@@ -11,7 +11,8 @@ class PaymentVoucherController extends Controller
     {
         $payment->load('debtor');
 
-        if ($payment->debtor->user_id !== auth()->id()) {
+        $companyId = (int) session('current_company_id');
+        if ((int) $payment->debtor->company_id !== $companyId) {
             abort(404);
         }
 

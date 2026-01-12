@@ -12,7 +12,8 @@ class PaymentController extends Controller
 {
     public function store(Request $request, Debtor $debtor)
     {
-        if ($debtor->user_id !== auth()->id()) {
+        $companyId = (int) session('current_company_id');
+        if ((int) $debtor->company_id !== $companyId) {
             abort(404);
         }
 
