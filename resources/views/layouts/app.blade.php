@@ -60,6 +60,12 @@
                                     </svg>
                                     User Management
                                 </a>
+                                <a href="{{ route('reports.all-transactions') }}" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Transaction Reports
+                                </a>
                                 @endif
                                 <form method="POST" action="{{ route('debtors.refreshAll') }}" class="inline-flex items-center">
                                     @csrf
@@ -75,6 +81,23 @@
 
                         <!-- Auth Dropdown -->
                         <div class="flex items-center">
+                            @if(auth()->check() && !auth()->user()->isAdmin())
+                                <form method="POST" action="{{ route('companies.switch') }}" class="hidden md:flex items-center mr-3">
+                                    @csrf
+                                    <label for="nav_company_id" class="sr-only">Company</label>
+                                    <select
+                                        id="nav_company_id"
+                                        name="company_id"
+                                        onchange="this.form.submit()"
+                                        class="text-sm rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        @foreach(auth()->user()->companies()->orderBy('companies.name')->get() as $company)
+                                            <option value="{{ $company->id }}" {{ (string) session('current_company_id') === (string) $company->id ? 'selected' : '' }}>
+                                                {{ $company->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open" class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                                     <div class="flex items-center space-x-2">
