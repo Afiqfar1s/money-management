@@ -88,6 +88,33 @@
                         </div>
                     </div>
 
+                    <!-- Company Assignment -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-semibold text-gray-700">Companies (can manage)</label>
+                            <a href="{{ route('companies.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">Manage companies</a>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Select one or more companies for this user. Leave blank to assign later.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            @foreach(($companies ?? collect()) as $company)
+                                <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 cursor-pointer transition-colors">
+                                    <input type="checkbox" name="company_ids[]" value="{{ $company->id }}"
+                                        {{ in_array($company->id, old('company_ids', [])) ? 'checked' : '' }}
+                                        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <span class="ml-3 text-sm font-medium text-gray-700">{{ $company->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        @error('company_ids')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('company_ids.*')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Actions -->
                     <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                         <a href="{{ route('users.index') }}" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors">

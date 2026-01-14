@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +37,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+    $companies = Company::query()->orderBy('name')->get();
+
+    return view('users.create', compact('companies'));
     }
 
     /**
@@ -50,6 +53,8 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', Rule::in(['user', 'admin'])],
             'permissions' => ['nullable', 'array'],
+            'company_ids' => ['nullable', 'array'],
+            'company_ids.*' => ['integer', 'exists:companies,id'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -59,7 +64,10 @@ class UserController extends Controller
             $validated['permissions'] = User::getDefaultPermissions();
         }
 
-        User::create($validated);
+    $user = User::create($validated);
+
+    // Assign companies (many-to-many)
+    $user->companies()->sync($validated['company_ids'] ?? []);
 
         return redirect()->route('users.index')
             ->with('success', 'User created successfully!');
@@ -79,7 +87,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('users.edit', compact('user'));
+    $companies = Company::query()->orderBy('name')->get();
+    $assignedCompanyIds = $user->companies()->pluck('companies.id')->all();
+
+    return view('users.edit', compact('user', 'companies', 'assignedCompanyIds'));
     }
 
     /**
@@ -93,6 +104,8 @@ class UserController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', Rule::in(['user', 'admin'])],
             'permissions' => ['nullable', 'array'],
+            'company_ids' => ['nullable', 'array'],
+            'company_ids.*' => ['integer', 'exists:companies,id'],
         ]);
 
         if (empty($validated['password'])) {
@@ -109,6 +122,18 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+
+        // Keep admin UX simple: allow assigning companies even for admins.
+        $user->companies()->sync($validated['company_ids'] ?? []);
+
+        // If the edited user is the current user and they no longer belong to the selected company,
+        // clear the company context so middleware can re-select a valid one.
+        if ($user->id === auth()->id()) {
+            $currentCompanyId = session('current_company_id');
+            if ($currentCompanyId && !$user->isAdmin() && !$user->companies()->where('companies.id', $currentCompanyId)->exists()) {
+                session()->forget('current_company_id');
+            }
+        }
 
         return redirect()->route('users.index')
             ->with('success', 'User updated successfully!');

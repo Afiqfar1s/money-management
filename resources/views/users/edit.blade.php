@@ -168,6 +168,50 @@
                     </div>
                 </div>
 
+                <!-- Company Assignment Card -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 11h18M3 15h18M3 19h18"/>
+                                </svg>
+                                Companies (can manage)
+                            </h2>
+                            <a href="{{ route('companies.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">Manage companies</a>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Assign which companies this user can access. You can rename companies via the links below.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            @php
+                                $selectedCompanyIds = old('company_ids', $assignedCompanyIds ?? []);
+                            @endphp
+                            @foreach(($companies ?? collect()) as $company)
+                                <label class="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer">
+                                    <span class="flex items-center">
+                                        <input type="checkbox" name="company_ids[]" value="{{ $company->id }}"
+                                            {{ in_array($company->id, $selectedCompanyIds) ? 'checked' : '' }}
+                                            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-700">{{ $company->name }}</span>
+                                    </span>
+
+                                    <a href="{{ route('companies.edit', $company) }}" class="text-xs text-indigo-600 hover:text-indigo-800 underline shrink-0" onclick="event.stopPropagation();">
+                                        Rename
+                                    </a>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        @error('company_ids')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('company_ids.*')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <!-- Actions -->
                 <div class="flex items-center justify-between gap-4 pt-2">
                     <div class="text-sm text-gray-500">
