@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BalanceAdjustmentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DebtorController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentVoucherController;
@@ -17,10 +18,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/select', [CompanyContextController::class, 'select'])->name('companies.select');
     Route::post('/companies/switch', [CompanyContextController::class, 'switch'])->name('companies.switch');
 
+    // Dashboard - Smart routing (admin vs user)
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Home - Debtor Dashboard
     Route::middleware('company')->group(function () {
-        Route::get('/', [DebtorController::class, 'index'])->name('debtors.index');
-        Route::get('/dashboard', [DebtorController::class, 'index'])->name('dashboard');
+        Route::get('/debtors', [DebtorController::class, 'index'])->name('debtors.index');
     
         // Debtor Management
         Route::get('/debtors/create', [DebtorController::class, 'create'])->name('debtors.create');
