@@ -96,23 +96,31 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    /**
+     * Update user's basic information only
+     */
+    public function updateBasicInfo(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['user', 'admin'])],
-            'permissions' => ['nullable', 'array'],
-            'company_ids' => ['nullable', 'array'],
-            'company_ids.*' => ['integer', 'exists:companies,id'],
         ]);
 
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        } else {
-            $validated['password'] = Hash::make($validated['password']);
-        }
+        $user->update($validated);
+
+        return redirect()->route('users.edit', $user)
+            ->with('success', 'Basic information updated successfully!');
+    }
+
+    /**
+     * Update user's role and permissions only
+     */
+    public function updateRolePermissions(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'role' => ['required', Rule::in(['user', 'admin'])],
+            'permissions' => ['nullable', 'array'],
+        ]);
 
         // Handle permissions based on role
         if ($validated['role'] === 'admin') {
@@ -123,7 +131,20 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        // Keep admin UX simple: allow assigning companies even for admins.
+        return redirect()->route('users.edit', $user)
+            ->with('success', 'Role and permissions updated successfully!');
+    }
+
+    /**
+     * Update user's company assignments only
+     */
+    public function updateCompanies(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'company_ids' => ['nullable', 'array'],
+            'company_ids.*' => ['integer', 'exists:companies,id'],
+        ]);
+
         $user->companies()->sync($validated['company_ids'] ?? []);
 
         // If the edited user is the current user and they no longer belong to the selected company,
@@ -135,8 +156,17 @@ class UserController extends Controller
             }
         }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully!');
+        return redirect()->route('users.edit', $user)
+            ->with('success', 'Company assignments updated successfully!');
+    }
+
+    /**
+     * Legacy update method - now redirects to edit page
+     */
+    public function update(Request $request, User $user)
+    {
+        return redirect()->route('users.edit', $user)
+            ->with('info', 'Please use the individual update sections below.');
     }
 
     /**
@@ -160,5 +190,22 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully!');
+    }
+
+    /**
+     * Update the user's password separately
+     */
+    public function updatePassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()->route('users.edit', $user)
+            ->with('success', 'Password updated successfully!');
     }
 }

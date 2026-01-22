@@ -77,10 +77,10 @@ class User extends Authenticatable
     public static function getDefaultPermissions(): array
     {
         return [
-            'view_own_debtors',
+            'view_debtors',
             'create_debtors',
-            'edit_own_debtors',
-            'delete_own_debtors',
+            'edit_debtors',
+            'delete_debtors',
             'manage_payments',
             'manage_adjustments',
         ];
@@ -92,13 +92,10 @@ class User extends Authenticatable
     public static function getAllPermissions(): array
     {
         return [
-            'view_own_debtors' => 'View Own Debtors',
-            'view_all_debtors' => 'View All Debtors',
+            'view_debtors' => 'View Debtors',
             'create_debtors' => 'Create Debtors',
-            'edit_own_debtors' => 'Edit Own Debtors',
-            'edit_all_debtors' => 'Edit All Debtors',
-            'delete_own_debtors' => 'Delete Own Debtors',
-            'delete_all_debtors' => 'Delete All Debtors',
+            'edit_debtors' => 'Edit Debtors',
+            'delete_debtors' => 'Delete Debtors',
             'manage_payments' => 'Manage Payments',
             'manage_adjustments' => 'Manage Balance Adjustments',
             'view_reports' => 'View Reports',

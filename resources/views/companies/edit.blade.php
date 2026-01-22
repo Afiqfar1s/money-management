@@ -15,7 +15,7 @@
                         <div class="mt-4 rounded-md bg-green-50 p-4 text-sm text-green-700">{{ session('success') }}</div>
                     @endif
 
-                    <form method="POST" action="{{ route('companies.update', $company) }}" class="mt-6 space-y-6">
+                    <form method="POST" action="{{ route('companies.update', $company) }}" class="mt-6 space-y-6" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -42,6 +42,32 @@
                                 <x-input-label for="address" value="Address" />
                                 <textarea id="address" name="address" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('address', $company->address) }}</textarea>
                                 <x-input-error class="mt-2" :messages="$errors->get('address')" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <x-input-label for="logo" value="Company Logo" />
+                                <div class="mt-2 flex items-start gap-4">
+                                    @if($company->logo_url)
+                                        <img src="{{ $company->logo_url }}" alt="{{ $company->name }} logo" class="h-12 w-12 rounded-lg object-cover border-2 border-gray-300 shadow-sm" />
+                                    @else
+                                        <div class="h-12 w-12 rounded-lg border-2 border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-500">
+                                            No logo
+                                        </div>
+                                    @endif
+
+                                    <div class="flex-1">
+                                        <input id="logo" name="logo" type="file" accept="image/*" class="block w-full text-sm text-gray-700" />
+                                        <p class="text-xs text-gray-500 mt-1">Upload a new logo to replace the current one. PNG/JPG up to 2MB.</p>
+                                        <x-input-error class="mt-2" :messages="$errors->get('logo')" />
+
+                                        @if($company->logo_url)
+                                            <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700">
+                                                <input type="checkbox" name="remove_logo" value="1" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                                Remove current logo
+                                            </label>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

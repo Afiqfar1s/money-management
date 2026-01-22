@@ -12,6 +12,11 @@ class PaymentController extends Controller
 {
     public function store(Request $request, Debtor $debtor)
     {
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->hasPermission('manage_payments')) {
+            abort(403);
+        }
+
         $companyId = (int) session('current_company_id');
         if ((int) $debtor->company_id !== $companyId) {
             abort(404);

@@ -49,6 +49,12 @@ Route::middleware('auth')->group(function () {
         // Admin-only routes
         Route::middleware('admin')->group(function () {
             Route::resource('users', UserController::class);
+            
+            // Individual user update endpoints
+            Route::put('/users/{user}/basic-info', [UserController::class, 'updateBasicInfo'])->name('users.basic-info.update');
+            Route::put('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.password.update');
+            Route::put('/users/{user}/role-permissions', [UserController::class, 'updateRolePermissions'])->name('users.role-permissions.update');
+            Route::put('/users/{user}/companies', [UserController::class, 'updateCompanies'])->name('users.companies.update');
 
             // Company Management (Admin Only)
             Route::resource('companies', CompanyController::class)->except(['show']);

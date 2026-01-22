@@ -17,6 +17,7 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Logo</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Code</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Users</th>
@@ -26,6 +27,15 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($companies as $company)
                             <tr>
+                                <td class="px-6 py-4">
+                                    @if($company->logo_url)
+                                        <img src="{{ $company->logo_url }}" alt="{{ $company->name }} logo" class="h-10 w-10 rounded-lg object-cover border-2 border-gray-300 shadow-sm" />
+                                    @else
+                                        <div class="h-10 w-10 rounded-lg border-2 border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-500">
+                                            -
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $company->name }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-700">{{ $company->code ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-700">{{ $company->users()->count() }}</td>

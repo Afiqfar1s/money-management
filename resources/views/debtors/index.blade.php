@@ -221,11 +221,9 @@
 
                                     @php
                                         $canEdit = auth()->user()->isAdmin() 
-                                            || auth()->user()->hasPermission('edit_all_debtors')
-                                            || (auth()->user()->hasPermission('edit_own_debtors') && $debtor->user_id === auth()->id());
+                                            || auth()->user()->hasPermission('edit_debtors');
                                         $canDelete = auth()->user()->isAdmin()
-                                            || auth()->user()->hasPermission('delete_all_debtors')
-                                            || (auth()->user()->hasPermission('delete_own_debtors') && $debtor->user_id === auth()->id());
+                                            || auth()->user()->hasPermission('delete_debtors');
                                     @endphp
 
                                     @if($canEdit)

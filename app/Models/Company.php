@@ -16,7 +16,21 @@ class Company extends Model
         'code',
         'address',
         'phone',
+        'logo_path',
     ];
+
+    protected $appends = [
+        'logo_url',
+    ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (empty($this->logo_path)) {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($this->logo_path, '/'));
+    }
 
     public function users(): BelongsToMany
     {

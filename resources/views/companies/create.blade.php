@@ -8,7 +8,7 @@
                         <a href="{{ route('companies.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Back</a>
                     </div>
 
-                    <form method="POST" action="{{ route('companies.store') }}" class="mt-6 space-y-5">
+                    <form method="POST" action="{{ route('companies.store') }}" class="mt-6 space-y-5" enctype="multipart/form-data">
                         @csrf
 
                         <div>
@@ -33,6 +33,13 @@
                             <x-input-label for="address" value="Address (optional)" />
                             <textarea id="address" name="address" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('address') }}</textarea>
                             <x-input-error class="mt-2" :messages="$errors->get('address')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="logo" value="Company Logo (optional)" />
+                            <input id="logo" name="logo" type="file" accept="image/*" class="mt-1 block w-full text-sm text-gray-700" />
+                            <p class="text-xs text-gray-500 mt-1">PNG/JPG up to 2MB.</p>
+                            <x-input-error class="mt-2" :messages="$errors->get('logo')" />
                         </div>
 
                         <div class="flex items-center gap-3">

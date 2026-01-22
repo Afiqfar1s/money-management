@@ -17,11 +17,20 @@ class ReportController extends Controller
      */
     public function debtorPaymentHistory($debtorId)
     {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->hasPermission('view_reports')) {
+            abort(403);
+        }
+
         $debtor = Debtor::with(['payments', 'balanceAdjustments'])->findOrFail($debtorId);
 
         $companyId = (int) session('current_company_id');
         if ((int) $debtor->company_id !== $companyId) {
             abort(404);
+        }
+
+        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors') && $user->hasPermission('view_own_debtors') && (int) $debtor->user_id !== (int) $user->id) {
+            abort(403);
         }
 
         // Get all transactions (payments and adjustments) combined and sorted
@@ -77,6 +86,10 @@ class ReportController extends Controller
     {
         if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized access - Admin only');
+        }
+
+        if (!Auth::user()->hasPermission('view_reports')) {
+            abort(403);
         }
 
         $companyId = (int) session('current_company_id');
@@ -158,6 +171,10 @@ class ReportController extends Controller
     {
         if (!Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized access - Admin only');
+        }
+
+        if (!Auth::user()->hasPermission('export_data')) {
+            abort(403);
         }
 
         $companyId = (int) session('current_company_id');

@@ -38,7 +38,9 @@ class CompanyContextController extends Controller
         if ($user->isAdmin()) {
             Company::query()->findOrFail($companyId);
             $request->session()->put('current_company_id', $companyId);
-            return back()->with('success', 'Company switched.');
+            // Force page refresh by redirecting to current URL
+            return redirect($request->header('Referer') ?? route('dashboard'))
+                ->with('success', 'Company switched.');
         }
 
         $company = $user->companies()->where('companies.id', $companyId)->first();
@@ -48,6 +50,8 @@ class CompanyContextController extends Controller
 
         $request->session()->put('current_company_id', $companyId);
 
-        return back()->with('success', 'Company switched.');
+        // Force page refresh by redirecting to current URL
+        return redirect($request->header('Referer') ?? route('dashboard'))
+            ->with('success', 'Company switched.');
     }
 }

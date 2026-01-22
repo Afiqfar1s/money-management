@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -26,7 +27,15 @@ class CompanyController extends Controller
             'code' => ['nullable', 'string', 'max:50', 'unique:companies,code'],
             'address' => ['nullable', 'string'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'logo' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('company-logos', 'public');
+        }
+
+        $validated['logo_path'] = $logoPath;
 
         Company::create($validated);
 
@@ -48,15 +57,30 @@ class CompanyController extends Controller
             'code' => ['nullable', 'string', 'max:50', 'unique:companies,code,' . $company->id],
             'address' => ['nullable', 'string'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
             'user_ids' => ['nullable', 'array'],
             'user_ids.*' => ['integer', 'exists:users,id'],
         ]);
+
+        if (!empty($validated['remove_logo']) && $company->logo_path) {
+            Storage::disk('public')->delete($company->logo_path);
+            $company->logo_path = null;
+        }
+
+        if ($request->hasFile('logo')) {
+            if ($company->logo_path) {
+                Storage::disk('public')->delete($company->logo_path);
+            }
+            $company->logo_path = $request->file('logo')->store('company-logos', 'public');
+        }
 
         $company->update([
             'name' => $validated['name'],
             'code' => $validated['code'] ?? null,
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
+            'logo_path' => $company->logo_path,
         ]);
 
         $company->users()->sync($validated['user_ids'] ?? []);
@@ -66,6 +90,9 @@ class CompanyController extends Controller
 
     public function destroy(Company $company)
     {
+        if ($company->logo_path) {
+            Storage::disk('public')->delete($company->logo_path);
+        }
         $company->delete();
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }

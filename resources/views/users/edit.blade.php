@@ -1,246 +1,260 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
     <!-- Page Header -->
-    <div class="bg-indigo-600">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-white">Edit User</h1>
-                    <p class="text-indigo-100 mt-2">Update user information and access level</p>
-                </div>
-                <a href="{{ route('users.index') }}" class="px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 font-medium">
-                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Back
-                </a>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit User</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Update user information - {{ $user->name }}</p>
+            </div>
+            <a href="{{ route('users.index') }}" class="bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Back to Users
+            </a>
+        </div>
+    </div>
+
+    <!-- User Info Summary -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex items-center gap-4">
+            <div class="h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-300">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+            </div>
+            <div class="flex-1">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $user->name }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $user->email }}</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 rounded-full text-sm font-medium {{ $user->isAdmin() ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' }}">
+                    {{ ucfirst($user->role) }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    {{ $user->companies->count() }} {{ Str::plural('Company', $user->companies->count()) }}
+                </span>
             </div>
         </div>
     </div>
 
-    <div class="py-8 bg-gray-50 min-h-screen">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <form action="{{ route('users.update', $user) }}" method="POST" class="space-y-6" x-data="{ role: '{{ old('role', $user->role) }}' }">
+    <!-- Section 1: Basic Information -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750" @click="open = !open">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div x-show="open" x-collapse>
+            <form action="{{ route('users.basic-info.update', $user) }}" method="POST" class="p-6">
                 @csrf
                 @method('PUT')
-
-                <!-- Basic Information Card -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            Basic Information
-                        </h2>
-                    </div>
-                    <div class="p-6 space-y-5">
-                        <!-- Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('name') border-red-500 @enderror">
-                            @error('name')
-                            <p class="mt-1.5 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                            @enderror
-                        </div>
-
-                        <!-- Email -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('email') border-red-500 @enderror">
-                            @error('email')
-                            <p class="mt-1.5 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Card -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                            Security
-                        </h2>
-                        <p class="text-xs text-gray-500 mt-1">Leave password fields blank to keep current password</p>
-                    </div>
-                    <div class="p-6 space-y-5">
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                            <input type="password" name="password" id="password"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('password') border-red-500 @enderror">
-                            @error('password')
-                            <p class="mt-1.5 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                            @enderror
-                            <p class="mt-1.5 text-xs text-gray-500 flex items-center">
-                                <svg class="w-3.5 h-3.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Minimum 8 characters if changing password
-                            </p>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Role & Permissions Card -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                            Role & Permissions
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <!-- Role -->
-                        <div class="mb-5">
-                            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role <span class="text-red-500">*</span></label>
-                            <select name="role" id="role" required x-model="role"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('role') border-red-500 @enderror">
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                            @error('role')
-                            <p class="mt-1.5 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                            @enderror
-                        </div>
-
-                        <!-- Permissions Section (shown only for regular users) -->
-                        <div x-show="role === 'user'" x-cloak class="mt-6 p-5 bg-indigo-50 rounded-lg border border-indigo-200" x-data="{ selectAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = true) }, clearAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = false) } }">
-                            <div class="flex items-start justify-between gap-4 mb-4">
-                                <div>
-                                    <h3 class="text-base font-semibold text-gray-900 flex items-center">
-                                    <svg class="w-5 h-5 mr-2 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Custom Permissions
-                                </h3>
-                                    <p class="text-sm text-gray-600 mt-1">Select what this user can do. Admins always have full access.</p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button type="button" @click="selectAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-indigo-200 rounded-md hover:bg-indigo-100">Select all</button>
-                                    <button type="button" @click="clearAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-indigo-200 rounded-md hover:bg-red-50 hover:border-red-300">Clear</button>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                @php
-                                    $userPermissions = old('permissions', $user->permissions ?? \App\Models\User::getDefaultPermissions());
-                                @endphp
-                                @foreach(\App\Models\User::getAllPermissions() as $key => $label)
-                                <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer">
-                                    <input type="checkbox" name="permissions[]" value="{{ $key }}" 
-                                        {{ in_array($key, $userPermissions) ? 'checked' : '' }}
-                                        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500">
-                                    <span class="ml-3 text-sm font-medium text-gray-700">{{ $label }}</span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div x-show="role === 'admin'" x-cloak class="mt-4 rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">
-                            <div class="font-semibold">Admin has full access</div>
-                            <div class="mt-1 text-purple-700">Permissions are not used for admins.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Company Assignment Card -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 11h18M3 15h18M3 19h18"/>
-                                </svg>
-                                Companies (can manage)
-                            </h2>
-                            <a href="{{ route('companies.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">Manage companies</a>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Assign which companies this user can access. You can rename companies via the links below.</p>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            @php
-                                $selectedCompanyIds = old('company_ids', $assignedCompanyIds ?? []);
-                            @endphp
-                            @foreach(($companies ?? collect()) as $company)
-                                <label class="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer">
-                                    <span class="flex items-center">
-                                        <input type="checkbox" name="company_ids[]" value="{{ $company->id }}"
-                                            {{ in_array($company->id, $selectedCompanyIds) ? 'checked' : '' }}
-                                            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500">
-                                        <span class="ml-3 text-sm font-medium text-gray-700">{{ $company->name }}</span>
-                                    </span>
-
-                                    <a href="{{ route('companies.edit', $company) }}" class="text-xs text-indigo-600 hover:text-indigo-800 underline shrink-0" onclick="event.stopPropagation();">
-                                        Rename
-                                    </a>
-                                </label>
-                            @endforeach
-                        </div>
-
-                        @error('company_ids')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                
+                <div class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Full Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('name') border-red-500 @enderror">
+                        @error('name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        @error('company_ids.*')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Email Address <span class="text-red-500">*</span>
+                        </label>
+                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('email') border-red-500 @enderror">
+                        @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="flex items-center justify-between gap-4 pt-2">
-                    <div class="text-sm text-gray-500">
-                        <span class="text-red-500">*</span> Required fields
-                    </div>
-                    <div class="flex gap-3">
-                        <a href="{{ route('users.index') }}" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">
-                            Cancel
-                        </a>
-                        <button type="submit" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg inline-flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Update User
-                        </button>
-                    </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        Update Basic Info
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Section 2: Change Password -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750" @click="open = !open">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
+                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div x-show="open" x-collapse>
+            <form action="{{ route('users.password.update', $user) }}" method="POST" class="p-6">
+                @csrf
+                @method('PUT')
+                
+                <div class="space-y-4">
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            New Password <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" name="password" id="password" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('password') border-red-500 @enderror">
+                        @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 8 characters</p>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Confirm New Password <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" name="password_confirmation" id="password_confirmation" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section 3: Role & Permissions -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" x-data="{ open: true, role: '{{ old('role', $user->role) }}' }">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750" @click="open = !open">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Role & Permissions</h3>
+                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div x-show="open" x-collapse>
+            <form action="{{ route('users.role-permissions.update', $user) }}" method="POST" class="p-6">
+                @csrf
+                @method('PUT')
+                
+                <div class="space-y-4">
+                    <!-- Role -->
+                    <div>
+                        <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            User Role <span class="text-red-500">*</span>
+                        </label>
+                        <select name="role" id="role" required x-model="role"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('role') border-red-500 @enderror">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        @error('role')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Permissions (only for regular users) -->
+                    <div x-show="role === 'user'" x-cloak>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Custom Permissions</label>
+                        
+                        <div class="flex justify-end gap-2 mb-3">
+                            <button type="button" onclick="document.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = true)" 
+                                class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+                                Select All
+                            </button>
+                            <button type="button" onclick="document.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = false)" 
+                                class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600">
+                                Clear All
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                            @foreach(\App\Models\User::getAllPermissions() as $key => $label)
+                            <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer">
+                                <input type="checkbox" name="permissions[]" value="{{ $key }}" 
+                                    {{ in_array($key, old('permissions', $user->permissions ?? [])) ? 'checked' : '' }}
+                                    class="w-4 h-4 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
+                                <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div x-show="role === 'admin'" x-cloak class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                            Admins have full access to all features automatically.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        Update Role & Permissions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section 4: Company Assignments -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750" @click="open = !open">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Company Assignments</h3>
+                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div x-show="open" x-collapse>
+            <form action="{{ route('users.companies.update', $user) }}" method="POST" class="p-6">
+                @csrf
+                @method('PUT')
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Select Companies</label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                        @foreach(($companies ?? \App\Models\Company::orderBy('name')->get()) as $company)
+                            <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer">
+                                <input type="checkbox" name="company_ids[]" value="{{ $company->id }}"
+                                    {{ in_array($company->id, old('company_ids', $user->companies->pluck('id')->toArray())) ? 'checked' : '' }}
+                                    class="w-4 h-4 text-indigo-600 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500">
+                                <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ $company->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    @error('company_ids')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        Update Companies
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
 @endsection

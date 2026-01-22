@@ -65,18 +65,14 @@ class UserCompanyAssignmentTest extends TestCase
         $targetUser->companies()->sync([$companyA->id]);
         $this->assertTrue($targetUser->fresh()->companies->pluck('id')->contains($companyA->id));
 
-        // Update: remove A, add B
-        $response = $this->actingAs($admin)->put(route('users.update', $targetUser, absolute: false), [
-            'name' => $targetUser->name,
-            'email' => $targetUser->email,
-            'role' => 'user',
-            'permissions' => $targetUser->permissions,
+        // Update: remove A, add B using the new independent company update endpoint
+        $response = $this->actingAs($admin)->put(route('users.companies.update', $targetUser, absolute: false), [
             'company_ids' => [$companyB->id],
         ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('users.index', absolute: false));
+            ->assertRedirect(route('users.edit', $targetUser, absolute: false));
 
         $targetUser->refresh();
 

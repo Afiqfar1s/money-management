@@ -19,6 +19,11 @@ class DebtorController extends Controller
             return redirect()->route('companies.select');
         }
 
+        // Permission: view debtors
+        if (!$user->isAdmin() && !$user->hasPermission('view_debtors')) {
+            abort(403);
+        }
+
         $query = Debtor::query()->where('company_id', $companyId);
 
         // Search filter
@@ -60,9 +65,9 @@ class DebtorController extends Controller
         $total_debtors = $summaryQuery->count();
         
         $paymentsQuery = DB::table('payments')
-            ->join('debtors', 'payments.debtor_id', '=', 'debtors.id');
+                ->join('debtors', 'payments.debtor_id', '=', 'debtors.id');
 
-    $paymentsQuery->where('debtors.company_id', $companyId);
+        $paymentsQuery->where('debtors.company_id', $companyId);
         
         $total_paid = $paymentsQuery->sum('payments.amount');
 
@@ -71,11 +76,21 @@ class DebtorController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->hasPermission('create_debtors')) {
+            abort(403);
+        }
+
         return view('debtors.create');
     }
 
     public function store(Request $request)
     {
+    $user = auth()->user();
+    if (!$user->isAdmin() && !$user->hasPermission('create_debtors')) {
+        abort(403);
+    }
+
     $companyId = (int) session('current_company_id');
         
         $validated = $request->validate([
@@ -144,9 +159,18 @@ class DebtorController extends Controller
 
     public function show(Debtor $debtor)
     {
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->hasPermission('view_debtors')) {
+            abort(403);
+        }
+
         $companyId = (int) session('current_company_id');
         if ((int) $debtor->company_id !== $companyId) {
             abort(404);
+        }
+
+        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors') && $user->hasPermission('view_own_debtors') && (int) $debtor->user_id !== (int) $user->id) {
+            abort(403);
         }
 
         $payments = $debtor->payments()
@@ -166,19 +190,29 @@ class DebtorController extends Controller
 
     public function edit(Debtor $debtor)
     {
+    $user = auth()->user();
     $companyId = (int) session('current_company_id');
     if ((int) $debtor->company_id !== $companyId) {
             abort(404);
         }
+
+    if (!$user->isAdmin() && !$user->hasPermission('edit_debtors')) {
+        abort(403);
+    }
 
         return view('debtors.edit', compact('debtor'));
     }
 
     public function update(Request $request, Debtor $debtor)
     {
+        $user = auth()->user();
         $companyId = (int) session('current_company_id');
         if ((int) $debtor->company_id !== $companyId) {
             abort(404);
+        }
+
+        if (!$user->isAdmin() && !$user->hasPermission('edit_debtors')) {
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -236,9 +270,14 @@ class DebtorController extends Controller
 
     public function refresh(Debtor $debtor)
     {
+        $user = auth()->user();
         $companyId = (int) session('current_company_id');
         if ((int) $debtor->company_id !== $companyId) {
             abort(404);
+        }
+
+        if (!$user->isAdmin() && !$user->hasPermission('edit_debtors')) {
+            abort(403);
         }
 
         DB::transaction(function () use ($debtor) {
@@ -255,6 +294,10 @@ class DebtorController extends Controller
     public function refreshAll()
     {
         $count = 0;
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->hasPermission('edit_debtors')) {
+            abort(403);
+        }
 
     $companyId = (int) session('current_company_id');
     $query = Debtor::query()->where('company_id', $companyId);
@@ -277,10 +320,15 @@ class DebtorController extends Controller
 
     public function destroy(Debtor $debtor)
     {
+    $user = auth()->user();
     $companyId = (int) session('current_company_id');
     if ((int) $debtor->company_id !== $companyId) {
             abort(404);
         }
+
+    if (!$user->isAdmin() && !$user->hasPermission('delete_debtors')) {
+        abort(403);
+    }
 
         $debtor->delete();
 
