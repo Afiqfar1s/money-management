@@ -58,22 +58,30 @@
                         <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">User Role</label>
                         <select name="role" id="role" required x-model="role"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors @error('role') border-red-500 @enderror">
-                            <option value="user">User - Regular access with custom permissions</option>
-                            <option value="admin">Admin - Full system access</option>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
                         </select>
                         @error('role')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
 
                         <!-- Permissions Section (shown only for regular users) -->
-                        <div x-show="role === 'user'" x-cloak class="mt-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <div x-show="role === 'user'" x-cloak class="mt-6 p-6 bg-gray-50 rounded-lg border border-gray-200" x-data="{ selectAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = true) }, clearAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = false) } }">
+                            <div class="flex items-start justify-between gap-4 mb-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-700 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                 </svg>
-                                User Permissions
-                            </h3>
-                            <p class="text-xs text-gray-500 mb-4">Select the permissions this user will have. Uncheck to restrict access.</p>
+                                    User Permissions
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-1">Pick what this user can do. (Admins always have full access.)</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="selectAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md hover:bg-indigo-50 hover:border-indigo-300">Select all</button>
+                                    <button type="button" @click="clearAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-md hover:bg-red-50 hover:border-red-300">Clear</button>
+                                </div>
+                            </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 @foreach(\App\Models\User::getAllPermissions() as $key => $label)
@@ -120,7 +128,8 @@
                         <a href="{{ route('users.index') }}" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors">
                             Cancel
                         </a>
-                        <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors shadow-sm                             Create User
+                        <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                            Create User
                         </button>
                     </div>
                 </form>

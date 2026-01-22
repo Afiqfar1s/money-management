@@ -126,8 +126,8 @@
                             <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role <span class="text-red-500">*</span></label>
                             <select name="role" id="role" required x-model="role"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('role') border-red-500 @enderror">
-                                <option value="user">User - Regular access with custom permissions</option>
-                                <option value="admin">Admin - Full system access</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
                             </select>
                             @error('role')
                             <p class="mt-1.5 text-sm text-red-600 flex items-center">
@@ -140,15 +140,21 @@
                         </div>
 
                         <!-- Permissions Section (shown only for regular users) -->
-                        <div x-show="role === 'user'" x-cloak class="mt-6 p-5 bg-indigo-50 rounded-lg border border-indigo-200">
-                            <div class="mb-4">
-                                <h3 class="text-base font-semibold text-gray-900 flex items-center">
+                        <div x-show="role === 'user'" x-cloak class="mt-6 p-5 bg-indigo-50 rounded-lg border border-indigo-200" x-data="{ selectAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = true) }, clearAll() { $root.querySelectorAll('input[name=\'permissions[]\']').forEach(el => el.checked = false) } }">
+                            <div class="flex items-start justify-between gap-4 mb-4">
+                                <div>
+                                    <h3 class="text-base font-semibold text-gray-900 flex items-center">
                                     <svg class="w-5 h-5 mr-2 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                     Custom Permissions
                                 </h3>
-                                <p class="text-sm text-gray-600 mt-1">Select the specific actions this user can perform</p>
+                                    <p class="text-sm text-gray-600 mt-1">Select what this user can do. Admins always have full access.</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="button" @click="selectAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-indigo-200 rounded-md hover:bg-indigo-100">Select all</button>
+                                    <button type="button" @click="clearAll()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-indigo-200 rounded-md hover:bg-red-50 hover:border-red-300">Clear</button>
+                                </div>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -164,6 +170,11 @@
                                 </label>
                                 @endforeach
                             </div>
+                        </div>
+
+                        <div x-show="role === 'admin'" x-cloak class="mt-4 rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">
+                            <div class="font-semibold">Admin has full access</div>
+                            <div class="mt-1 text-purple-700">Permissions are not used for admins.</div>
                         </div>
                     </div>
                 </div>
