@@ -89,6 +89,9 @@ class DashboardController extends Controller
         // System Health Alerts
         $alerts = $this->getSystemAlerts();
         
+        // Chart Data
+        $chartData = $this->getChartData();
+        
         return view('dashboard', compact(
             'totalUsers',
             'totalAdmins',
@@ -102,8 +105,98 @@ class DashboardController extends Controller
             'companyPerformance',
             'recentActivities',
             'topDebtors',
-            'alerts'
+            'alerts',
+            'chartData'
         ));
+    }
+    
+    private function getChartData()
+    {
+        // Last 6 months payment trends
+        $monthlyPayments = [];
+        $monthLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthLabels[] = $date->format('M Y');
+            $monthlyPayments[] = DB::table('payments')
+                ->whereYear('paid_at', $date->year)
+                ->whereMonth('paid_at', $date->month)
+                ->sum('amount');
+        }
+        
+        // Debtor type distribution
+        $individualCount = Debtor::where('debtor_type', 'individual')->count();
+        $companyCount = Debtor::where('debtor_type', 'company')->count();
+        
+        // Company outstanding breakdown (top 5)
+        $companyOutstanding = Company::withCount('debtors')
+            ->get()
+            ->map(function ($company) {
+                return [
+                    'name' => $company->name,
+                    'outstanding' => Debtor::where('company_id', $company->id)->sum('outstanding'),
+                ];
+            })
+            ->sortByDesc('outstanding')
+            ->take(5)
+            ->values();
+        
+        // Outstanding vs Paid comparison (last 6 months)
+        $outstandingTrend = [];
+        $paidTrend = [];
+        
+        // Get current total outstanding
+        $currentOutstanding = Debtor::whereHas('company')->sum('outstanding');
+        
+        // Calculate total payments made up to now
+        $totalPaymentsToDate = DB::table('payments')->sum('amount');
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $endOfMonth = $date->endOfMonth();
+            
+            // Calculate payments made up to end of this month
+            $paymentsUpToMonth = DB::table('payments')
+                ->where('paid_at', '<=', $endOfMonth)
+                ->sum('amount');
+            
+            // Calculate what outstanding was at end of that month
+            // Outstanding at that time = Current Outstanding + (Total Payments Since Then)
+            $paymentsAfterMonth = DB::table('payments')
+                ->where('paid_at', '>', $endOfMonth)
+                ->sum('amount');
+            
+            $outstandingAtMonth = $currentOutstanding + $paymentsAfterMonth;
+            
+            // Payments made during this specific month
+            $paymentsInMonth = DB::table('payments')
+                ->whereYear('paid_at', $date->year)
+                ->whereMonth('paid_at', $date->month)
+                ->sum('amount');
+            
+            $outstandingTrend[] = $outstandingAtMonth;
+            $paidTrend[] = $paymentsInMonth;
+        }
+        
+        return [
+            'monthlyPayments' => [
+                'labels' => $monthLabels,
+                'data' => $monthlyPayments,
+            ],
+            'debtorTypes' => [
+                'labels' => ['Individual', 'Company'],
+                'data' => [$individualCount, $companyCount],
+            ],
+            'companyOutstanding' => [
+                'labels' => $companyOutstanding->pluck('name')->toArray(),
+                'data' => $companyOutstanding->pluck('outstanding')->toArray(),
+            ],
+            'outstandingVsPaid' => [
+                'labels' => $monthLabels,
+                'outstanding' => $outstandingTrend,
+                'paid' => $paidTrend,
+            ],
+        ];
     }
     
     private function getRecentActivities()

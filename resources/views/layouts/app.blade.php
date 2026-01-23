@@ -39,13 +39,18 @@
                         <div class="flex items-center space-x-8">
                             <!-- Logo/Brand -->
                             <a href="{{ route('dashboard') }}" class="flex items-center">
-                                @if($currentCompany && $currentCompany->logo_url)
+                                @if(!Auth::user()->isAdmin() && $currentCompany && $currentCompany->logo_url)
+                                    <!-- Show company logo only for regular users who have selected a company -->
                                     <img src="{{ $currentCompany->logo_url }}" alt="{{ $currentCompany->name }} logo" class="h-14 w-auto max-w-[200px] object-contain border-2 border-gray-300 rounded-lg shadow-sm p-1 bg-white" />
                                 @else
-                                    <div class="bg-indigo-600 text-white rounded-lg p-2">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
+                                    <!-- Show app logo for admins and when no company is selected -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-indigo-600 text-white rounded-lg p-2">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="font-bold text-xl text-gray-900 dark:text-white">Money Management</span>
                                     </div>
                                 @endif
                             </a>
@@ -280,5 +285,7 @@
         <style>
             [x-cloak] { display: none !important; }
         </style>
+        
+        @stack('scripts')
     </body>
 </html>

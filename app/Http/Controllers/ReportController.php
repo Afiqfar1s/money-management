@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Debtor;
 use App\Models\Payment;
 use App\Models\BalanceAdjustment;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,111 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    /**
+     * Show Reports Hub with company selection and report options
+     */
+    public function index(Request $request)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized access - Admin only');
+        }
+
+        if (!Auth::user()->hasPermission('view_reports')) {
+            abort(403);
+        }
+
+        // Get all companies for the dropdown
+        $companies = Company::orderBy('name')->get();
+        
+        // Get selected company from request or separate reports session
+        $selectedCompanyId = $request->get('company_id', session('reports_company_id'));
+        $selectedCompany = $selectedCompanyId ? Company::find($selectedCompanyId) : null;
+        
+        // Get report type from request
+        $reportType = $request->get('report_type', 'overview');
+        
+        $reportData = null;
+        
+        if ($selectedCompany) {
+            // Store selected company in SEPARATE session key for reports only
+            session(['reports_company_id' => $selectedCompany->id]);
+            
+            // Generate report data based on type
+            switch ($reportType) {
+                case 'debtors':
+                    $reportData = $this->getDebtorsReport($selectedCompany->id);
+                    break;
+                case 'payments':
+                    $reportData = $this->getPaymentsReport($selectedCompany->id, $request);
+                    break;
+                case 'outstanding':
+                    $reportData = $this->getOutstandingReport($selectedCompany->id);
+                    break;
+                case 'overview':
+                default:
+                    $reportData = $this->getOverviewReport($selectedCompany->id);
+                    break;
+            }
+        }
+        
+        return view('reports.index', compact('companies', 'selectedCompany', 'reportType', 'reportData'));
+    }
+    
+    private function getOverviewReport($companyId)
+    {
+        return [
+            'total_debtors' => Debtor::where('company_id', $companyId)->count(),
+            'total_outstanding' => Debtor::where('company_id', $companyId)->sum('outstanding'),
+            'total_paid' => DB::table('payments')
+                ->join('debtors', 'payments.debtor_id', '=', 'debtors.id')
+                ->where('debtors.company_id', $companyId)
+                ->sum('payments.amount'),
+            'recent_payments' => DB::table('payments')
+                ->join('debtors', 'payments.debtor_id', '=', 'debtors.id')
+                ->where('debtors.company_id', $companyId)
+                ->select('payments.*', 'debtors.name as debtor_name')
+                ->orderBy('payments.paid_at', 'desc')
+                ->limit(10)
+                ->get(),
+        ];
+    }
+    
+    private function getDebtorsReport($companyId)
+    {
+        return Debtor::where('company_id', $companyId)
+            ->with(['user'])
+            ->orderBy('outstanding', 'desc')
+            ->get();
+    }
+    
+    private function getPaymentsReport($companyId, $request)
+    {
+        $query = DB::table('payments')
+            ->join('debtors', 'payments.debtor_id', '=', 'debtors.id')
+            ->where('debtors.company_id', $companyId)
+            ->select('payments.*', 'debtors.name as debtor_name')
+            ->orderBy('payments.paid_at', 'desc');
+            
+        // Apply date filters if provided
+        if ($request->filled('date_from')) {
+            $query->where('payments.paid_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->where('payments.paid_at', '<=', $request->date_to);
+        }
+        
+        return $query->paginate(50);
+    }
+    
+    private function getOutstandingReport($companyId)
+    {
+        return Debtor::where('company_id', $companyId)
+            ->where('outstanding', '>', 0)
+            ->with(['user'])
+            ->orderBy('outstanding', 'desc')
+            ->get();
+    }
+
     /**
      * Generate PDF for individual debtor payment history
      */
@@ -262,6 +368,118 @@ class ReportController extends Controller
 
         $filename = 'All_Transactions_Report_' . date('Ymd_His') . '.pdf';
 
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Download Overview Report as PDF
+     */
+    public function downloadOverviewPdf(Request $request)
+    {
+        if (!Auth::user()->isAdmin() || !Auth::user()->hasPermission('export_data')) {
+            abort(403);
+        }
+
+        $companyId = $request->get('company_id', session('reports_company_id'));
+        $company = Company::findOrFail($companyId);
+        
+        $data = $this->getOverviewReport($companyId);
+        $data['company'] = $company;
+        $data['generatedDate'] = now()->format('d M Y, h:i A');
+        $data['generatedBy'] = Auth::user()->name;
+
+        $pdf = Pdf::loadView('reports.pdf.overview', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Overview_Report_' . $company->name . '_' . date('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Download Debtors Report as PDF
+     */
+    public function downloadDebtorsPdf(Request $request)
+    {
+        if (!Auth::user()->isAdmin() || !Auth::user()->hasPermission('export_data')) {
+            abort(403);
+        }
+
+        $companyId = $request->get('company_id', session('reports_company_id'));
+        $company = Company::findOrFail($companyId);
+        
+        $debtors = $this->getDebtorsReport($companyId);
+        
+        $data = [
+            'company' => $company,
+            'debtors' => $debtors,
+            'generatedDate' => now()->format('d M Y, h:i A'),
+            'generatedBy' => Auth::user()->name,
+        ];
+
+        $pdf = Pdf::loadView('reports.pdf.debtors', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'All_Debtors_Report_' . $company->name . '_' . date('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Download Outstanding Report as PDF
+     */
+    public function downloadOutstandingPdf(Request $request)
+    {
+        if (!Auth::user()->isAdmin() || !Auth::user()->hasPermission('export_data')) {
+            abort(403);
+        }
+
+        $companyId = $request->get('company_id', session('reports_company_id'));
+        $company = Company::findOrFail($companyId);
+        
+        $debtors = $this->getOutstandingReport($companyId);
+        
+        $data = [
+            'company' => $company,
+            'debtors' => $debtors,
+            'totalOutstanding' => $debtors->sum('outstanding'),
+            'generatedDate' => now()->format('d M Y, h:i A'),
+            'generatedBy' => Auth::user()->name,
+        ];
+
+        $pdf = Pdf::loadView('reports.pdf.outstanding', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Outstanding_Report_' . $company->name . '_' . date('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Download Payments Report as PDF
+     */
+    public function downloadPaymentsPdf(Request $request)
+    {
+        if (!Auth::user()->isAdmin() || !Auth::user()->hasPermission('export_data')) {
+            abort(403);
+        }
+
+        $companyId = $request->get('company_id', session('reports_company_id'));
+        $company = Company::findOrFail($companyId);
+        
+        $payments = $this->getPaymentsReport($companyId, $request);
+        
+        $data = [
+            'company' => $company,
+            'payments' => $payments,
+            'totalPayments' => $payments->sum('amount'),
+            'dateFrom' => $request->get('date_from'),
+            'dateTo' => $request->get('date_to'),
+            'generatedDate' => now()->format('d M Y, h:i A'),
+            'generatedBy' => Auth::user()->name,
+        ];
+
+        $pdf = Pdf::loadView('reports.pdf.payments', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'Payment_History_Report_' . $company->name . '_' . date('Ymd_His') . '.pdf';
         return $pdf->download($filename);
     }
 }

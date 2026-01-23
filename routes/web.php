@@ -67,9 +67,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/sessions', [SessionController::class, 'adminIndex'])->name('sessions.index');
             Route::delete('/sessions/{sessionId}', [SessionController::class, 'destroy'])->name('sessions.destroy');
             
-            // Reports - All Transactions (Admin Only)
+            // Reports Hub (Admin Only)
+            Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
             Route::get('/reports/all-transactions', [ReportController::class, 'allTransactionsPage'])->name('reports.all-transactions');
             Route::get('/reports/all-transactions/download', [ReportController::class, 'downloadAllTransactions'])->name('reports.all-transactions.download');
+            
+            // Reports Center PDF Downloads
+            Route::get('/reports/download/overview', [ReportController::class, 'downloadOverviewPdf'])->name('reports.download.overview');
+            Route::get('/reports/download/debtors', [ReportController::class, 'downloadDebtorsPdf'])->name('reports.download.debtors');
+            Route::get('/reports/download/outstanding', [ReportController::class, 'downloadOutstandingPdf'])->name('reports.download.outstanding');
+            Route::get('/reports/download/payments', [ReportController::class, 'downloadPaymentsPdf'])->name('reports.download.payments');
         });
     });
     
