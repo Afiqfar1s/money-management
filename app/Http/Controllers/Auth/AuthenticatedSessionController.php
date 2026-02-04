@@ -28,7 +28,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-    return redirect()->intended(route('dashboard', absolute: false));
+        // Auto-select first company for non-admin users
+        $user = $request->user();
+        if (!$user->isAdmin()) {
+            $companyId = $user->companies()->orderBy('companies.name')->value('companies.id');
+            if ($companyId) {
+                $request->session()->put('current_company_id', (int) $companyId);
+            }
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
@@ -38,10 +47,16 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
+        // Clear company selection
+        $request->session()->forget('current_company_id');
+        
+        // Clear all session data
+        $request->session()->flush();
+
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login')->with('status', 'You have been logged out.');
     }
 }

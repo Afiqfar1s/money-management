@@ -2,29 +2,13 @@
 
 @section('content')
 <div x-data="{
-    searchQuery: '',
-    statusFilter: 'all',
-    loading: false,
-    async search() {
-        this.loading = true;
+    searchQuery: '{{ request('q') }}',
+    statusFilter: '{{ request('status', '') }}',
+    performSearch() {
         const params = new URLSearchParams();
         if (this.searchQuery) params.append('q', this.searchQuery);
-        if (this.statusFilter !== 'all') params.append('status', this.statusFilter);
-        
-        try {
-            const response = await fetch(`{{ route('debtors.index') }}?${params}`);
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTable = doc.getElementById('debtors-tbody');
-            if (newTable) {
-                document.getElementById('debtors-tbody').innerHTML = newTable.innerHTML;
-            }
-        } catch (error) {
-            console.error('Search failed:', error);
-        } finally {
-            this.loading = false;
-        }
+        if (this.statusFilter) params.append('status', this.statusFilter);
+        window.location.href = '{{ route('debtors.index') }}' + (params.toString() ? '?' + params : '');
     }
 }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
@@ -102,13 +86,15 @@
 
     <!-- Search and Filter -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+        <form method="GET" action="{{ route('debtors.index') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <!-- Search Input - Takes most space -->
             <div class="flex-1">
                 <input 
                     type="text" 
-                    x-model="searchQuery" 
-                    @input.debounce.300ms="search()"
+                    name="q"
+                    x-model="searchQuery"
+                    @input.debounce.500ms="performSearch()"
+                    value="{{ request('q') }}"
                     placeholder="Search by debtor name, description, or voucher number..." 
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base">
             </div>
@@ -116,32 +102,37 @@
             <!-- Status Filter Dropdown -->
             <div class="w-full md:w-56">
                 <select 
-                    x-model="statusFilter" 
-                    @change="search()"
+                    name="status"
+                    x-model="statusFilter"
+                    @change="performSearch()"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base">
-                    <option value="all">All Status</option>
-                    <option value="owing">Owing Only</option>
+                    <option value="">All Status</option>
+                    <option value="owing">Outstanding Only</option>
                     <option value="settled">Settled Only</option>
                 </select>
             </div>
 
-            <!-- Clear Button -->
+            <!-- Search Button (for non-JS fallback) -->
             <button 
-                @click="searchQuery = ''; statusFilter = 'all'; search()" 
-                class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors whitespace-nowrap">
-                Clear
+                type="submit"
+                class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors whitespace-nowrap">
+                Search
             </button>
-        </div>
-    </div>
 
-    <!-- Loading State -->
-    <div x-show="loading" x-cloak class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-indigo-600 mx-auto"></div>
-        <p class="text-gray-600 mt-4">Loading...</p>
+            <!-- Clear Button -->
+            @if(request('q') || request('status'))
+            <a 
+                href="{{ route('debtors.index') }}"
+                @click.prevent="searchQuery = ''; statusFilter = ''; performSearch()"
+                class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors whitespace-nowrap text-center">
+                Clear
+            </a>
+            @endif
+        </form>
     </div>
 
     <!-- Debtors Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" x-show="!loading" x-cloak>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Debtor Records</h3>
