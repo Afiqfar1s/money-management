@@ -18,26 +18,49 @@ class DebtorController extends Controller
             abort(403);
         }
 
-        // If admin without company selected, show all debtors
-        if ($user->isAdmin() && $companyId <= 0) {
-            $query = Debtor::query();
+        // Admin can filter by company or view all
+        $selectedCompanyId = null;
+        $companies = collect();
+        
+        if ($user->isAdmin()) {
+            $companies = \App\Models\Company::orderBy('name')->get();
+            
+            // Check if admin selected a specific company filter
+            if ($request->filled('company_id')) {
+                $selectedCompanyId = $request->company_id === 'all' ? 'all' : (int) $request->company_id;
+            } else {
+                // Default to "all" for admin
+                $selectedCompanyId = 'all';
+            }
+        }
+
+        // Build query based on user role
+        $query = Debtor::query();
+        
+        if ($user->isAdmin()) {
+            // Admin: filter by selected company or show all
+            if ($selectedCompanyId !== 'all') {
+                $query->where('company_id', $selectedCompanyId);
+            }
+            // If 'all', no company filter applied
         } else {
-            $query = Debtor::query()->where('company_id', $companyId);
+            // Regular user: only their company
+            $query->where('company_id', $companyId);
         }
 
         // Search filter
         if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('description', 'ilike', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
                   // Search by payment voucher number
                   ->orWhereHas('payments', function ($query) use ($search) {
-                      $query->where('voucher_no', 'ilike', "%{$search}%");
+                      $query->where('voucher_no', 'like', "%{$search}%");
                   })
                   // Search by balance adjustment voucher number
                   ->orWhereHas('balanceAdjustments', function ($query) use ($search) {
-                      $query->where('voucher_no', 'ilike', "%{$search}%");
+                      $query->where('voucher_no', 'like', "%{$search}%");
                   });
             });
         }
@@ -57,8 +80,16 @@ class DebtorController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Compute summary (ignore filters)
-    $summaryQuery = Debtor::query()->where('company_id', $companyId);
+        // Compute summary based on same filters
+        $summaryQuery = Debtor::query();
+        
+        if ($user->isAdmin()) {
+            if ($selectedCompanyId !== 'all') {
+                $summaryQuery->where('company_id', $selectedCompanyId);
+            }
+        } else {
+            $summaryQuery->where('company_id', $companyId);
+        }
         
         $total_outstanding = $summaryQuery->sum('outstanding');
         $total_debtors = $summaryQuery->count();
@@ -66,11 +97,17 @@ class DebtorController extends Controller
         $paymentsQuery = DB::table('payments')
                 ->join('debtors', 'payments.debtor_id', '=', 'debtors.id');
 
-        $paymentsQuery->where('debtors.company_id', $companyId);
+        if ($user->isAdmin()) {
+            if ($selectedCompanyId !== 'all') {
+                $paymentsQuery->where('debtors.company_id', $selectedCompanyId);
+            }
+        } else {
+            $paymentsQuery->where('debtors.company_id', $companyId);
+        }
         
         $total_paid = $paymentsQuery->sum('payments.amount');
 
-        return view('debtors.index', compact('debtors', 'total_outstanding', 'total_paid', 'total_debtors'));
+        return view('debtors.index', compact('debtors', 'total_outstanding', 'total_paid', 'total_debtors', 'companies', 'selectedCompanyId'));
     }
 
     public function create()
@@ -95,22 +132,22 @@ class DebtorController extends Controller
         $validated = $request->validate([
             'debtor_type' => 'required|in:individual,company',
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'starting_outstanding' => 'required|numeric|min:0',
             'voucher_no' => 'nullable|string|max:255|unique:balance_adjustments,voucher_no',
             
-            // Individual fields - all optional
-            'staff_number' => 'nullable|string|max:255',
-            'ic_number' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:255',
+            // Individual fields
+            'staff_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
+            'ic_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
+            'phone_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
             'address' => 'nullable|string',
             'position' => 'nullable|string|max:255',
-            'start_working_date' => 'nullable|date',
+            'start_working_date' => 'required_if:debtor_type,individual|nullable|date',
             'resign_date' => 'nullable|date|after_or_equal:start_working_date',
             
-            // Company fields - all optional
-            'ssm_number' => 'nullable|string|max:255',
-            'office_phone' => 'nullable|string|max:255',
+            // Company fields
+            'ssm_number' => 'required_if:debtor_type,company|nullable|string|max:255',
+            'office_phone' => 'required_if:debtor_type,company|nullable|string|max:255',
             'company_address' => 'nullable|string',
         ]);
 
@@ -217,21 +254,21 @@ class DebtorController extends Controller
         $validated = $request->validate([
             'debtor_type' => 'required|in:individual,company',
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'starting_outstanding' => 'required|numeric|min:0',
             
-            // Individual fields - all optional
-            'staff_number' => 'nullable|string|max:255',
-            'ic_number' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:255',
+            // Individual fields
+            'staff_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
+            'ic_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
+            'phone_number' => 'required_if:debtor_type,individual|nullable|string|max:255',
             'address' => 'nullable|string',
             'position' => 'nullable|string|max:255',
-            'start_working_date' => 'nullable|date',
+            'start_working_date' => 'required_if:debtor_type,individual|nullable|date',
             'resign_date' => 'nullable|date|after_or_equal:start_working_date',
             
-            // Company fields - all optional
-            'ssm_number' => 'nullable|string|max:255',
-            'office_phone' => 'nullable|string|max:255',
+            // Company fields
+            'ssm_number' => 'required_if:debtor_type,company|nullable|string|max:255',
+            'office_phone' => 'required_if:debtor_type,company|nullable|string|max:255',
             'company_address' => 'nullable|string',
         ]);
 

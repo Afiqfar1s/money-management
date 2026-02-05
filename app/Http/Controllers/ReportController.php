@@ -124,19 +124,33 @@ class ReportController extends Controller
     public function debtorPaymentHistory($debtorId)
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->hasPermission('view_reports')) {
-            abort(403);
-        }
-
         $debtor = Debtor::with(['payments', 'balanceAdjustments'])->findOrFail($debtorId);
 
-        $companyId = (int) session('current_company_id');
-        if ((int) $debtor->company_id !== $companyId) {
-            abort(404);
-        }
-
-        if (!$user->isAdmin() && !$user->hasPermission('view_all_debtors') && $user->hasPermission('view_own_debtors') && (int) $debtor->user_id !== (int) $user->id) {
-            abort(403);
+        // For non-admin users, verify access based on permissions
+        if (!$user->isAdmin()) {
+            // Check if user can view debtors at all
+            if (!$user->hasPermission('view_debtors') && !$user->hasPermission('view_own_debtors') && !$user->hasPermission('view_all_debtors')) {
+                abort(403, 'You do not have permission to view debtor reports.');
+            }
+            
+            // Check if user has permission to view this specific debtor
+            if ($user->hasPermission('view_own_debtors') && !$user->hasPermission('view_all_debtors')) {
+                // User can only view their own debtors
+                if ((int) $debtor->user_id !== (int) $user->id) {
+                    abort(403, 'You can only view reports for your own debtors.');
+                }
+            }
+            
+            // Check if debtor belongs to user's company (if company_id is set in user)
+            if ($user->company_id && (int) $debtor->company_id !== (int) $user->company_id) {
+                abort(403, 'This debtor does not belong to your company.');
+            }
+        } else {
+            // For admin users, optionally check current session company
+            $companyId = (int) session('current_company_id');
+            if ($companyId && (int) $debtor->company_id !== $companyId) {
+                abort(404, 'Debtor not found in the selected company.');
+            }
         }
 
         // Get all transactions (payments and adjustments) combined and sorted
