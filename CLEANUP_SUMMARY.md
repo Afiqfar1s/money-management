@@ -41,9 +41,6 @@
 - `DEVELOPMENT_GUIDE.md` - Development instructions
 
 #### ✅ Deployment Guides
-- `DEPLOYMENT_OPTIONS.md` - Overview of deployment options
-- `DEPLOYMENT_OPTIONS_COMPARISON.md` - Comparison of hosting services
-- `RAILWAY_DEPLOYMENT_GUIDE.md` - Railway deployment
 - `RENDER_DEPLOYMENT_COMPLETE_GUIDE.md` - Complete Render guide
 - `RENDER_QUICK_START.md` - Quick Render deployment
 - `SUPABASE_COMPLETE_SETUP.md` - Database setup guide
@@ -54,8 +51,6 @@
 - `docker-entrypoint.sh` - Docker startup script
 - `render-build.sh` - Render build script
 - `render-start.sh` - Render start script
-- `Procfile` - Railway/Heroku process file
-- `nixpacks.toml` - Railway build configuration
 
 #### ✅ Archived Backups
 - `.cleanup_backup/` - Old cleanup scripts and backup files

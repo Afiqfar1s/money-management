@@ -118,20 +118,6 @@ git push origin dev-afiq
 
 ---
 
-## ✨ What's Different from Railway?
-
-| Feature | Render | Railway |
-|---------|--------|---------|
-| **Free Tier** | 750 hrs | $5 credit |
-| **Cold Starts** | Yes (15 min) | Configurable |
-| **Setup** | Docker | Nixpacks |
-| **Dashboard** | Feature-rich | Simpler |
-| **Best For** | Production | Quick deploy |
-
-Both are great! Render requires Docker but gives more control.
-
----
-
 ## 🎯 Next Steps
 
 1. ✅ Files are ready

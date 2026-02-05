@@ -18,9 +18,9 @@
 - **Routes:** Well-organized in `routes/web.php`
 
 ### Documentation
-- **Essential Docs:** 11 markdown files
+- **Essential Docs:** 8 markdown files
 - **README:** Complete setup instructions
-- **Deployment Guides:** Railway & Render
+- **Deployment Guides:** Render only
 - **Feature Docs:** Admin company filter
 
 ### Configuration
@@ -151,18 +151,16 @@ money-management/
 
 ## 📚 Documentation Files
 
-### Essential Guides (11 files)
+### Essential Guides (8 files)
 1. `README.md` - Main project documentation
-2. `CLEANUP_SUMMARY.md` - Cleanup history
-3. `ADMIN_COMPANY_FILTER_FEATURE.md` - Feature guide
-4. `DEVELOPMENT_GUIDE.md` - Developer guide
-5. `DEPLOYMENT_OPTIONS.md` - Hosting options
-6. `DEPLOYMENT_OPTIONS_COMPARISON.md` - Service comparison
-7. `RAILWAY_DEPLOYMENT_GUIDE.md` - Railway setup
-8. `RENDER_DEPLOYMENT_COMPLETE_GUIDE.md` - Render complete
-9. `RENDER_QUICK_START.md` - Render quick start
-10. `SUPABASE_COMPLETE_SETUP.md` - Database setup
-11. `CUSTOM_DOMAIN_GUIDE.md` - Custom domain
+2. `PROJECT_STATUS.md` - Current project status
+3. `CLEANUP_SUMMARY.md` - Cleanup history
+4. `ADMIN_COMPANY_FILTER_FEATURE.md` - Feature guide
+5. `DEVELOPMENT_GUIDE.md` - Developer guide
+6. `RENDER_DEPLOYMENT_COMPLETE_GUIDE.md` - Render complete guide
+7. `RENDER_QUICK_START.md` - Render quick start
+8. `SUPABASE_COMPLETE_SETUP.md` - Database setup
+9. `CUSTOM_DOMAIN_GUIDE.md` - Custom domain
 
 ---
 
