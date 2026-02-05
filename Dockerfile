@@ -38,6 +38,9 @@ RUN npm ci && npm run build
 # Verify build output
 RUN ls -la public/build/ && echo "Build assets created successfully"
 
+# Create .env file placeholder (will be overridden by Render env vars)
+RUN touch .env && echo "APP_ENV=production" > .env
+
 # Create storage directories if they don't exist
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
