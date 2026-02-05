@@ -35,6 +35,13 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node dependencies and build assets
 RUN npm ci && npm run build
 
+# Create storage directories if they don't exist
+RUN mkdir -p storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
@@ -56,8 +63,12 @@ RUN echo '<Directory /var/www/html/public>\n\
 
 RUN a2enconf laravel
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start using entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
