@@ -10,6 +10,9 @@ npm ci
 echo "Building frontend assets..."
 npm run build
 
+echo "Verifying build output..."
+ls -la public/build/ || echo "Build directory not found!"
+
 echo "Running database migrations..."
 php artisan migrate --force
 

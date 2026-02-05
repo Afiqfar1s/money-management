@@ -35,6 +35,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node dependencies and build assets
 RUN npm ci && npm run build
 
+# Verify build output
+RUN ls -la public/build/ && echo "Build assets created successfully"
+
 # Create storage directories if they don't exist
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
@@ -43,8 +46,9 @@ RUN mkdir -p storage/framework/cache/data \
     bootstrap/cache
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/build
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 755 /var/www/html/public/build
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
