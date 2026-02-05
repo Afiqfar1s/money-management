@@ -1,30 +1,24 @@
 #!/usr/bin/env bash
-# Render.com build script for Laravel
-# exit on error
-set -o errexit
+set -e
 
-echo "🔨 Starting Render build process..."
-
-# Install PHP dependencies (production only, optimized)
-echo "📦 Installing PHP dependencies..."
+echo "Installing Composer dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate optimized autoload files
-echo "⚡ Optimizing autoloader..."
-composer dump-autoload --optimize
+echo "Installing NPM dependencies..."
+npm ci
 
-# Run database migrations
-echo "🗄️  Running database migrations..."
-php artisan migrate --force --no-interaction
+echo "Building frontend assets..."
+npm run build
 
-# Clear and cache config for better performance
-echo "🚀 Optimizing Laravel..."
+echo "Running database migrations..."
+php artisan migrate --force
+
+echo "Optimizing Laravel..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Create storage link if it doesn't exist
-echo "🔗 Creating storage link..."
-php artisan storage:link || true
+echo "Setting storage permissions..."
+chmod -R 775 storage bootstrap/cache
 
-echo "✅ Build complete!"
+echo "Build complete!"
