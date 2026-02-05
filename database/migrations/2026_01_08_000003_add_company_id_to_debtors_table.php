@@ -17,10 +17,9 @@ return new class extends Migration
                 ->nullable()
                 ->after('user_id')
                 ->constrained('companies')
-                ->cascadeOnDelete()
-                ->index();
+                ->cascadeOnDelete();
 
-            $table->index(['company_id', 'name']);
+            $table->index(['company_id', 'name'], 'debtors_company_id_name_index');
         });
     }
 
@@ -30,7 +29,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('debtors', function (Blueprint $table) {
-            $table->dropIndex(['company_id', 'name']);
+            $table->dropIndex('debtors_company_id_name_index');
             $table->dropConstrainedForeignId('company_id');
         });
     }
