@@ -35,8 +35,22 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node dependencies and build assets
 RUN npm ci && npm run build
 
-# Verify build output
-RUN ls -la public/build/ && echo "Build assets created successfully"
+# Verify build output and manifest
+RUN echo "Verifying Vite build..." && \
+    ls -la public/build/ && \
+    if [ -d "public/build/.vite" ]; then \
+        echo "✓ .vite directory found"; \
+        ls -la public/build/.vite/; \
+    else \
+        echo "✗ .vite directory NOT found"; \
+    fi && \
+    if [ -f "public/build/.vite/manifest.json" ]; then \
+        echo "✓ manifest.json found"; \
+        cat public/build/.vite/manifest.json; \
+    else \
+        echo "✗ manifest.json NOT found - BUILD FAILED!"; \
+        exit 1; \
+    fi
 
 # Create .env file placeholder (will be overridden by Render env vars)
 RUN touch .env && echo "APP_ENV=production" > .env
