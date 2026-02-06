@@ -31,8 +31,8 @@ php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
-# Cache config for production
-php artisan config:cache || echo "Config cache failed, continuing..."
+# Cache config for production (SKIP config:cache to avoid Vite manifest issues)
+echo "Skipping config:cache to prevent Vite manifest path issues..."
 php artisan route:cache || echo "Route cache failed, continuing..."
 php artisan view:cache || echo "View cache failed, continuing..."
 
