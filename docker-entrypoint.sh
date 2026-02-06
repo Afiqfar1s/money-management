@@ -13,6 +13,12 @@ if [ -d "/var/www/html/public/build" ]; then
     if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then
         echo "✓ Vite manifest found"
         cat /var/www/html/public/build/.vite/manifest.json
+
+        # Laravel may look for the manifest at /public/build/manifest.json
+        if [ ! -f "/var/www/html/public/build/manifest.json" ]; then
+            echo "Creating /public/build/manifest.json from .vite/manifest.json..."
+            cp -f /var/www/html/public/build/.vite/manifest.json /var/www/html/public/build/manifest.json || true
+        fi
         
         # Verify manifest is readable by www-data
         echo "Checking manifest permissions..."
@@ -21,6 +27,10 @@ if [ -d "/var/www/html/public/build" ]; then
         # Ensure proper permissions
         chmod 644 /var/www/html/public/build/.vite/manifest.json
         chown www-data:www-data /var/www/html/public/build/.vite/manifest.json
+        if [ -f "/var/www/html/public/build/manifest.json" ]; then
+            chmod 644 /var/www/html/public/build/manifest.json
+            chown www-data:www-data /var/www/html/public/build/manifest.json
+        fi
         echo "✓ Manifest permissions fixed"
     else
         echo "✗ Vite manifest NOT found!"

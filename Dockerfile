@@ -35,6 +35,12 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Install Node dependencies and build assets
 RUN npm ci && npm run build
 
+# Laravel expects the Vite manifest at public/build/manifest.json, while Vite writes it to public/build/.vite/manifest.json.
+# Keep both paths available for compatibility.
+RUN if [ -f "public/build/.vite/manifest.json" ]; then \
+        cp -f public/build/.vite/manifest.json public/build/manifest.json; \
+    fi
+
 # Verify build output and manifest
 RUN echo "Verifying Vite build..." && \
     ls -la public/build/ && \
@@ -45,10 +51,17 @@ RUN echo "Verifying Vite build..." && \
         echo "✗ .vite directory NOT found"; \
     fi && \
     if [ -f "public/build/.vite/manifest.json" ]; then \
-        echo "✓ manifest.json found"; \
+        echo "✓ .vite/manifest.json found"; \
         cat public/build/.vite/manifest.json; \
     else \
         echo "✗ manifest.json NOT found - BUILD FAILED!"; \
+        exit 1; \
+    fi && \
+    if [ -f "public/build/manifest.json" ]; then \
+        echo "✓ manifest.json (root) found"; \
+        cat public/build/manifest.json; \
+    else \
+        echo "✗ manifest.json (root) NOT found - BUILD FAILED!"; \
         exit 1; \
     fi
 
