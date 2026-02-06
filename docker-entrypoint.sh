@@ -8,6 +8,14 @@ echo "Checking build assets..."
 if [ -d "/var/www/html/public/build" ]; then
     echo "✓ Build directory found"
     ls -la /var/www/html/public/build/
+    
+    # Check for manifest.json
+    if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then
+        echo "✓ Vite manifest found"
+        cat /var/www/html/public/build/.vite/manifest.json
+    else
+        echo "✗ Vite manifest NOT found!"
+    fi
 else
     echo "✗ Build directory NOT found!"
 fi
@@ -37,6 +45,17 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 echo "Enabling error logs..."
 sed -i 's/error_reporting = .*/error_reporting = E_ALL/' /usr/local/etc/php/php.ini-production || true
 sed -i 's/display_errors = .*/display_errors = On/' /usr/local/etc/php/php.ini-production || true
+
+# Check Laravel logs for errors
+echo "Checking Laravel storage logs..."
+if [ -f "/var/www/html/storage/logs/laravel.log" ]; then
+    echo "Recent Laravel errors:"
+    tail -50 /var/www/html/storage/logs/laravel.log || true
+fi
+
+# Test database connection
+echo "Testing database connection..."
+php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Database connected successfully'; } catch (Exception \$e) { echo 'Database connection failed: ' . \$e->getMessage(); }" || echo "Database test failed"
 
 echo "Starting Apache..."
 # Start Apache in foreground
