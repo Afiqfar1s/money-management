@@ -13,6 +13,15 @@ if [ -d "/var/www/html/public/build" ]; then
     if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then
         echo "✓ Vite manifest found"
         cat /var/www/html/public/build/.vite/manifest.json
+        
+        # Verify manifest is readable by www-data
+        echo "Checking manifest permissions..."
+        ls -la /var/www/html/public/build/.vite/manifest.json
+        
+        # Ensure proper permissions
+        chmod 644 /var/www/html/public/build/.vite/manifest.json
+        chown www-data:www-data /var/www/html/public/build/.vite/manifest.json
+        echo "✓ Manifest permissions fixed"
     else
         echo "✗ Vite manifest NOT found!"
     fi
@@ -56,6 +65,10 @@ fi
 # Test database connection
 echo "Testing database connection..."
 php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Database connected successfully'; } catch (Exception \$e) { echo 'Database connection failed: ' . \$e->getMessage(); }" || echo "Database test failed"
+
+# Test if Laravel can see the Vite manifest
+echo "Testing if Laravel can access Vite manifest..."
+php artisan tinker --execute="echo 'Manifest path: ' . public_path('build/.vite/manifest.json') . PHP_EOL; echo 'File exists: ' . (file_exists(public_path('build/.vite/manifest.json')) ? 'YES' : 'NO') . PHP_EOL; if (file_exists(public_path('build/.vite/manifest.json'))) { echo 'Readable: ' . (is_readable(public_path('build/.vite/manifest.json')) ? 'YES' : 'NO') . PHP_EOL; }" || echo "Manifest test failed"
 
 echo "Starting Apache..."
 # Start Apache in foreground
