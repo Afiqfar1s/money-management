@@ -20,12 +20,6 @@ class TestUserCompanySeeder extends Seeder
             return;
         }
 
-        // Set default permissions for test user
-        if (empty($user->permissions)) {
-            $user->permissions = User::getDefaultPermissions();
-            $user->save();
-        }
-
         $companies = [
             ['name' => 'Microcorp', 'code' => 'MICROCORP'],
             ['name' => 'MNHR', 'code' => 'MNHR'],

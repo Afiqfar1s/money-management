@@ -88,12 +88,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Quick logout helper (GET request for convenience)
-Route::get('/logout-now', function() {
-    auth()->guard('web')->logout();
-    session()->forget('current_company_id');
-    session()->invalidate();
-    session()->regenerateToken();
-    return redirect('/login')->with('status', 'Logged out successfully');
-})->name('quick-logout');
