@@ -17,6 +17,8 @@ Route::middleware('auth')->group(function () {
     // Company context
     Route::get('/companies/select', [CompanyContextController::class, 'select'])->name('companies.select');
     Route::post('/companies/switch', [CompanyContextController::class, 'switch'])->name('companies.switch');
+    // Redirect GET requests to switch (from bookmarks/direct access) to selection page
+    Route::get('/companies/switch', fn() => redirect()->route('companies.select'));
 
     // Dashboard - Smart routing (admin vs user)
     Route::get('/', [DashboardController::class, 'index'])->name('home');
