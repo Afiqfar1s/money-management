@@ -11,9 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Append RLS context middleware to web group (runs on every web request)
+        $middleware->appendToGroup('web', \App\Http\Middleware\SetRlsContext::class);
+        
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'company' => \App\Http\Middleware\EnsureCompanySelected::class,
+            'rls' => \App\Http\Middleware\SetRlsContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
