@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('balance_adjustments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('debtor_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('debtor_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->text('note')->nullable();
             $table->dateTime('adjusted_at')->useCurrent();

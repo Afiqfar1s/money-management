@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('debtor_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('debtor_id')->constrained()->cascadeOnDelete();
             $table->string('voucher_no')->unique()->index();
             $table->decimal('amount', 12, 2);
             $table->text('note')->nullable();

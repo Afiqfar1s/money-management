@@ -17,8 +17,7 @@ return new class extends Migration
                 ->nullable()
                 ->after('user_id')
                 ->constrained('companies')
-                ->cascadeOnDelete()
-                ->index();
+                ->cascadeOnDelete();
 
             $table->index(['company_id', 'name']);
         });

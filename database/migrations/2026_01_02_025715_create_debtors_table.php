@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('debtors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name')->index();
             $table->text('description')->nullable();
             $table->decimal('starting_outstanding', 12, 2)->default(0.00);
