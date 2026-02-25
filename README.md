@@ -6,10 +6,6 @@ A Laravel-based debt management and payment tracking system with multi-tenant co
 
 This application helps manage debtor information, track payments, record balance adjustments, and maintain detailed financial records for individuals and companies. Built with multi-tenancy in mind, users can be assigned to multiple companies with isolated data access.
 
-## 🌐 Live Demo
-
-**Production URL:** [https://money-management-ask7.onrender.com](https://money-management-ask7.onrender.com)
-
 ## Features
 
 - 💰 **Debtor Management** - Track individual and company debtors
@@ -28,19 +24,18 @@ This application helps manage debtor information, track payments, record balance
 
 - **Backend:** Laravel 12
 - **Frontend:** Blade Templates, TailwindCSS, Alpine.js
-- **Database:** PostgreSQL (Supabase)
+- **Database:** MySQL/MariaDB
 - **Authentication:** Laravel Breeze
 - **Build Tool:** Vite 7
-- **Hosting:** Render (Docker-based)
-- **Security:** Supabase Row Level Security (RLS)
+- **Hosting:** XAMPP (Local/Network Deployment)
+- **Security:** Role-based access control, session encryption
 
 ## Quick Start
 
 ### Prerequisites
-- PHP 8.2 or higher
+- XAMPP (includes PHP 8.2+, MySQL/MariaDB, Apache)
 - Composer
 - Node.js & npm
-- PostgreSQL database (or Supabase account)
 
 ### Installation
 
@@ -64,19 +59,21 @@ This application helps manage debtor information, track payments, record balance
 
 4. **Configure database**
    
-   For local development with SQLite:
+   Create database in MySQL:
    \`\`\`bash
-   touch database/database.sqlite
+   mysql -u root -p
+   CREATE DATABASE money_management;
+   exit
    \`\`\`
    
-   For Supabase PostgreSQL, update \`.env\`:
+   Update \`.env\`:
    \`\`\`env
-   DB_CONNECTION=pgsql
-   DB_HOST=your-supabase-host.supabase.com
-   DB_PORT=5432
-   DB_DATABASE=postgres
-   DB_USERNAME=postgres.your-project-id
-   DB_PASSWORD=your-password
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=money_management
+   DB_USERNAME=moneymanager
+   DB_PASSWORD=your_secure_password
    \`\`\`
 
 5. **Run migrations**
@@ -91,25 +88,26 @@ This application helps manage debtor information, track payments, record balance
    npm run dev
    \`\`\`
 
-7. **Start the server**
-   \`\`\`bash
-   php artisan serve --port=8001
-   \`\`\`
+7. **Start Apache in XAMPP**
+   - Open XAMPP Control Panel
+   - Start Apache and MySQL modules
 
 8. **Access the application**
    \`\`\`
-   http://127.0.0.1:8001
+   http://localhost/money-management/public
+   # Or if using virtual host:
+   http://moneymanagement.com
    \`\`\`
 
 ### Default Login Credentials
 
-**Super Admin:**
-- Email: \`admin@example.com\`
+**Admin:**
+- Email: \`admin@test.com\`
 - Password: \`admin123\`
 
 **Test User:**
-- Email: \`test@example.com\`
-- Password: \`test123\`
+- Email: \`user@test.com\`
+- Password: \`user123\`
 
 ## User Roles & Permissions
 
@@ -128,44 +126,47 @@ This application helps manage debtor information, track payments, record balance
   - \`edit_all_debtors\` - Edit any debtor record in current company
   - \`delete_all_debtors\` - Delete any debtor record in current company
 
-## Multi-Tenancy & Row Level Security
+## Multi-Tenancy & Company Isolation
 
-This application implements database-level security using Supabase Row Level Security (RLS):
+This application implements multi-tenant architecture with company-level data isolation:
 
 - **Company Isolation** - Users can only see data belonging to their assigned companies
-- **Admin Bypass** - Administrators have full access to all data
-- **Session-Based Context** - Laravel middleware passes user context to PostgreSQL for RLS enforcement
+- **Admin Bypass** - Administrators have full access to all data across all companies
+- **Middleware-Based Security** - Laravel middleware enforces company context on all queries
 
-### RLS Setup (for Supabase)
+### Company Assignment
 
-After deployment, run the SQL script in Supabase SQL Editor:
-\`\`\`sql
--- Located at: database/supabase_rls_setup.sql
-\`\`\`
+Users can be assigned to multiple companies through the admin panel. Regular users must select a company before accessing the system, while admins can view and manage all company data.
 
-See \`docs/RLS_IMPLEMENTATION.md\` for detailed documentation.
+## Network Deployment
 
-## Deployment
+### XAMPP Network Configuration
 
-### Render Deployment
+To make the application accessible on your local network:
 
-This project is configured for deployment on Render using Docker:
+To make the application accessible on your local network:
 
-1. Connect your GitHub repository to Render
-2. Set environment variables in Render dashboard
-3. Deploy - Render will use the \`Dockerfile\` automatically
+1. **Configure Apache Virtual Host**
+   - Edit \`httpd-vhosts.conf\` in XAMPP
+   - Add virtual host configuration
+   - Point DocumentRoot to \`public/\` folder
 
-Required environment variables:
-- \`APP_KEY\` - Laravel application key
-- \`APP_ENV\` - Set to \`production\`
-- \`DB_CONNECTION\`, \`DB_HOST\`, \`DB_DATABASE\`, \`DB_USERNAME\`, \`DB_PASSWORD\`
-- \`SESSION_DRIVER\` - Recommend \`file\` for free tier
-- \`CACHE_STORE\` - Recommend \`file\` for free tier
+2. **Configure Windows Firewall**
+   \`\`\`powershell
+   New-NetFirewallRule -DisplayName "Apache HTTP Server" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+   \`\`\`
 
-### Configuration Files
-- \`Dockerfile\` - Docker build configuration
-- \`docker-entrypoint.sh\` - Container startup script
-- \`render.yaml\` - Render deployment configuration
+3. **Update APP_URL in .env**
+   \`\`\`env
+   APP_URL=http://your-ip-address
+   \`\`\`
+
+4. **Access from network devices**
+   \`\`\`
+   http://your-ip-address
+   \`\`\`
+
+See \`docs/XAMPP_MYSQL_DEPLOYMENT.md\` for detailed deployment instructions.
 
 ## Key Features Details
 
@@ -200,52 +201,49 @@ Required environment variables:
 money-management/
 ├── app/
 │   ├── Http/Controllers/     # Application controllers
-│   ├── Http/Middleware/      # Custom middleware (incl. RLS context)
+│   ├── Http/Middleware/      # Custom middleware (admin, company context)
 │   ├── Models/               # Eloquent models
 │   └── Providers/            # Service providers
 ├── database/
 │   ├── migrations/           # Database migrations
-│   ├── seeders/              # Database seeders
-│   └── supabase_rls_setup.sql # RLS policies for Supabase
+│   └── seeders/              # Database seeders
 ├── docs/
-│   └── RLS_IMPLEMENTATION.md # RLS documentation
+│   ├── RLS_IMPLEMENTATION.md      # Row Level Security docs (legacy)
+│   ├── TROUBLESHOOTING_LOGIN.md   # Login troubleshooting guide
+│   └── XAMPP_MYSQL_DEPLOYMENT.md  # XAMPP deployment guide
 ├── resources/
 │   └── views/                # Blade templates
 ├── routes/
 │   └── web.php               # Web routes
-├── Dockerfile                # Docker configuration
-├── docker-entrypoint.sh      # Container startup script
-└── render.yaml               # Render deployment config
+├── public/
+│   └── storage/              # Public storage (symlinked)
+└── SECURITY_AUDIT_REPORT.md  # Security audit findings
 \`\`\`
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Slow loading on first visit (Render free tier):**
-- Free tier instances spin down after inactivity
-- First request after idle period takes 20-60 seconds (cold start)
-- Subsequent requests are fast
-
-**CSS not loading / Mixed content errors:**
-- Ensure \`APP_URL\` uses \`https://\` in production
-- The app forces HTTPS in production automatically
+**Port already in use:**
+- Check if another application is using port 80
+- Stop other web servers or change Apache port in XAMPP
 
 **Database connection issues:**
-- Verify Supabase connection string format
-- Use Session Pooler connection for serverless environments
-- Check firewall/network settings
-
-**Port already in use (local development):**
-\`\`\`bash
-php artisan serve --port=8002
-\`\`\`
+- Verify MySQL is running in XAMPP
+- Check database credentials in \`.env\`
+- Ensure database \`money_management\` exists
 
 **Assets not loading:**
 \`\`\`bash
 npm run build
+php artisan storage:link
 php artisan view:clear
 \`\`\`
+
+**Cannot login / Session issues:**
+- Ensure session tables exist: \`php artisan migrate\`
+- Check \`SESSION_DRIVER=database\` in \`.env\`
+- Clear cache: \`php artisan config:clear\`
 
 ### Clear Cache
 \`\`\`bash
@@ -259,11 +257,15 @@ php artisan route:clear
 
 - All routes protected with authentication middleware
 - Admin middleware for administrative functions
+- Company context middleware for data isolation
 - CSRF protection on all forms
 - Password hashing with bcrypt
 - Input validation and sanitization
-- Row Level Security at database level
-- HTTPS enforced in production
+- Session encryption enabled
+- Limited database user (not root)
+- Debug mode disabled in production
+
+**Security Audit:** See \`SECURITY_AUDIT_REPORT.md\` for comprehensive security review and recommendations.
 
 ## Contributing
 
@@ -283,5 +285,6 @@ For issues, questions, or contributions, please open an issue in the repository.
 
 ---
 
-**Last Updated:** 19 February 2026  
-**Version:** 2.0.0
+**Last Updated:** 24 February 2026  
+**Version:** 2.1.0  
+**Deployment:** XAMPP Production (Security Hardened)

@@ -85,7 +85,8 @@ FLUSH PRIVILEGES;
   - Session hijacking through stolen session IDs
   - User impersonation attacks
 - **Impact:** Unauthorized access to user accounts
-- **Evidence:** `.env` file line 26: `SESSION_ENCRYPT=false`
+- **Evidence:** `.env` file line 26: `SE
+SSION_ENCRYPT=false`
 
 **Recommendation:**
 ```dotenv
@@ -296,7 +297,8 @@ SESSION_LIFETIME=30  # 30 minutes for financial app
 
 If handling real financial data, consider:
 - **GDPR:** Personal data protection requirements
-- **PCI DSS:** If processing payment cards
+- **PCI DSS:** If processing payment 
+
 - **Local Data Protection Laws:** Malaysian PDPA compliance
 - **SOC 2:** Security controls for service organizations
 
