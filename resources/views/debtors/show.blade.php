@@ -19,14 +19,14 @@
                     <div class="flex items-center gap-3 mb-2">
                         <h1 class="text-3xl font-bold">{{ $debtor->name }}</h1>
                         @if ($debtor->debtor_type === 'individual')
-                            <span class="px-3 py-1 bg-white/90 text-white text-xs font-semibold rounded-full flex items-center">
+                            <span class="px-3 py-1 bg-white text-white text-xs font-semibold rounded-full flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                                 </svg>
                                 Individual / Staff
                             </span>
                         @else
-                            <span class="px-3 py-1 bg-white/90 text-white text-xs font-semibold rounded-full flex items-center">
+                            <span class="px-3 py-1 bg-white text-white text-xs font-semibold rounded-full flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
                                     <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
@@ -57,7 +57,7 @@
                     </a>
                     <form method="POST" action="{{ route('debtors.refresh', $debtor) }}" class="inline">
                         @csrf
-                        <button type="submit" class="px-4 py-2 bg-white/90 text-white rounded-lg hover:bg-opacity-30 transition-colors font-medium inline-flex items-center">
+                        <button type="submit" class="px-4 py-2 bg-white text-white rounded-lg hover:bg-opacity-30 transition-colors font-medium inline-flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>

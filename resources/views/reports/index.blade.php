@@ -208,23 +208,23 @@
 
 <div class="container mx-auto px-4 py-6 no-print">
     <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Reports Center</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Generate and view various reports for your companies</p>
+        <h1 class="text-3xl font-bold text-gray-900">Reports Center</h1>
+        <p class="text-gray-600 mt-1">Generate and view various reports for your companies</p>
     </div>
 
     <!-- Selection Panel -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <form method="GET" action="{{ route('reports.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Company Selection -->
                 <div>
-                    <label for="company_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label for="company_id" class="block text-sm font-medium text-gray-700 mb-2">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                         Select Company
                     </label>
-                    <select name="company_id" id="company_id" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500" required onchange="this.form.submit()">
+                    <select name="company_id" id="company_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" required onchange="this.form.submit()">
                         <option value="">-- Choose a Company --</option>
                         @foreach($companies as $company)
                             <option value="{{ $company->id }}" {{ $selectedCompany && $selectedCompany->id == $company->id ? 'selected' : '' }}>
@@ -236,13 +236,13 @@
 
                 <!-- Report Type Selection -->
                 <div>
-                    <label for="report_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label for="report_type" class="block text-sm font-medium text-gray-700 mb-2">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         Report Type
                     </label>
-                    <select name="report_type" id="report_type" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500" onchange="this.form.submit()">
+                    <select name="report_type" id="report_type" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" onchange="this.form.submit()">
                         <option value="overview" {{ $reportType == 'overview' ? 'selected' : '' }}>📊 Overview Summary</option>
                         <option value="debtors" {{ $reportType == 'debtors' ? 'selected' : '' }}>👥 All Debtors List</option>
                         <option value="outstanding" {{ $reportType == 'outstanding' ? 'selected' : '' }}>💰 Outstanding Debts</option>
@@ -253,14 +253,14 @@
 
             @if($reportType == 'payments' && $selectedCompany)
             <!-- Date Filters for Payment History -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                 <div>
-                    <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
-                    <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500">
+                    <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                    <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
                 <div>
-                    <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
-                    <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 focus:ring-indigo-500">
+                    <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                    <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
@@ -328,19 +328,19 @@
     </div>
     
     <!-- Report Content -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <!-- Report Header (Hidden in Print) -->
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 report-header-screen no-print">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 report-header-screen no-print">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                    <h2 class="text-xl font-bold text-gray-900">
                         @if($reportType == 'overview') 📊 Overview Summary
                         @elseif($reportType == 'debtors') 👥 All Debtors
                         @elseif($reportType == 'outstanding') 💰 Outstanding Debts
                         @elseif($reportType == 'payments') 💳 Payment History
                         @endif
                     </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p class="text-sm text-gray-600 mt-1">
                         {{ $selectedCompany->name }} @if($selectedCompany->code)• {{ $selectedCompany->code }}@endif
                     </p>
                 </div>
@@ -387,14 +387,14 @@
     </div>
     @else
     <!-- Empty State -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900 mb-4">
-            <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
+            <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Select a Company to View Reports</h3>
-        <p class="text-gray-600 dark:text-gray-400">Choose a company from the dropdown above to generate reports</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Select a Company to View Reports</h3>
+        <p class="text-gray-600">Choose a company from the dropdown above to generate reports</p>
     </div>
     @endif
 </div>
