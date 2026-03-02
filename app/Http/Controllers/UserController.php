@@ -55,6 +55,20 @@ class UserController extends Controller
             'permissions' => ['nullable', 'array'],
             'company_ids' => ['nullable', 'array'],
             'company_ids.*' => ['integer', 'exists:companies,id'],
+        ], [
+            // Custom validation messages
+            'name.required' => 'Please enter the user name.',
+            'name.max' => 'Name cannot exceed 255 characters.',
+            'email.required' => 'Please enter an email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'email.max' => 'Email address cannot exceed 255 characters.',
+            'password.required' => 'Please enter a password.',
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'role.required' => 'Please select a user role.',
+            'role.in' => 'Role must be either User or Admin.',
+            'company_ids.*.exists' => 'One or more selected companies do not exist.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);

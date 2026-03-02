@@ -149,6 +149,29 @@ class DebtorController extends Controller
             'ssm_number' => 'required_if:debtor_type,company|nullable|string|max:255',
             'office_phone' => 'required_if:debtor_type,company|nullable|string|max:255',
             'company_address' => 'nullable|string',
+        ], [
+            // Custom validation messages
+            'debtor_type.required' => 'Please select a debtor type (Individual or Company).',
+            'debtor_type.in' => 'Debtor type must be either Individual or Company.',
+            'name.required' => 'Please enter the debtor name.',
+            'name.max' => 'Debtor name cannot exceed 255 characters.',
+            'starting_outstanding.required' => 'Please enter the starting outstanding amount.',
+            'starting_outstanding.numeric' => 'Starting outstanding must be a valid number.',
+            'starting_outstanding.min' => 'Starting outstanding cannot be negative.',
+            
+            // Individual field messages
+            'staff_number.required_if' => 'Staff number is required for individual debtors.',
+            'ic_number.required_if' => 'IC number is required for individual debtors.',
+            'ic_number.max' => 'IC number cannot exceed 255 characters.',
+            'phone_number.required_if' => 'Phone number is required for individual debtors.',
+            'start_working_date.required_if' => 'Start working date is required for individual debtors.',
+            'start_working_date.date' => 'Please enter a valid start working date.',
+            'resign_date.date' => 'Please enter a valid resignation date.',
+            'resign_date.after_or_equal' => 'Resignation date must be on or after the start working date.',
+            
+            // Company field messages
+            'ssm_number.required_if' => 'SSM registration number is required for company debtors.',
+            'office_phone.required_if' => 'Office phone number is required for company debtors.',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -157,7 +180,7 @@ class DebtorController extends Controller
                 'company_id' => (int) session('current_company_id'),
                 'debtor_type' => $validated['debtor_type'],
                 'name' => $validated['name'],
-                'description' => $validated['description'],
+                'description' => $validated['description'] ?? null,
                 'starting_outstanding' => $validated['starting_outstanding'],
                 'outstanding' => $validated['starting_outstanding'],
                 
@@ -270,6 +293,29 @@ class DebtorController extends Controller
             'ssm_number' => 'required_if:debtor_type,company|nullable|string|max:255',
             'office_phone' => 'required_if:debtor_type,company|nullable|string|max:255',
             'company_address' => 'nullable|string',
+        ], [
+            // Custom validation messages
+            'debtor_type.required' => 'Please select a debtor type (Individual or Company).',
+            'debtor_type.in' => 'Debtor type must be either Individual or Company.',
+            'name.required' => 'Please enter the debtor name.',
+            'name.max' => 'Debtor name cannot exceed 255 characters.',
+            'starting_outstanding.required' => 'Please enter the starting outstanding amount.',
+            'starting_outstanding.numeric' => 'Starting outstanding must be a valid number.',
+            'starting_outstanding.min' => 'Starting outstanding cannot be negative.',
+            
+            // Individual field messages
+            'staff_number.required_if' => 'Staff number is required for individual debtors.',
+            'ic_number.required_if' => 'IC number is required for individual debtors.',
+            'ic_number.max' => 'IC number cannot exceed 255 characters.',
+            'phone_number.required_if' => 'Phone number is required for individual debtors.',
+            'start_working_date.required_if' => 'Start working date is required for individual debtors.',
+            'start_working_date.date' => 'Please enter a valid start working date.',
+            'resign_date.date' => 'Please enter a valid resignation date.',
+            'resign_date.after_or_equal' => 'Resignation date must be on or after the start working date.',
+            
+            // Company field messages
+            'ssm_number.required_if' => 'SSM registration number is required for company debtors.',
+            'office_phone.required_if' => 'Office phone number is required for company debtors.',
         ]);
 
         DB::transaction(function () use ($debtor, $validated) {
