@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'company' => \App\Http\Middleware\EnsureCompanySelected::class,
             'rls' => \App\Http\Middleware\SetRlsContext::class,
         ]);
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        // Daily database backup at midnight (00:00)
+        $schedule->command('backup:database')
+            ->daily()
+            ->at('00:00')
+            ->name('daily-database-backup')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -11,6 +11,7 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyContextController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\Admin\BackupController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -79,6 +80,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/reports/download/debtors', [ReportController::class, 'downloadDebtorsPdf'])->name('reports.download.debtors');
             Route::get('/reports/download/outstanding', [ReportController::class, 'downloadOutstandingPdf'])->name('reports.download.outstanding');
             Route::get('/reports/download/payments', [ReportController::class, 'downloadPaymentsPdf'])->name('reports.download.payments');
+            
+            // Database Backups (Admin Only)
+            Route::get('/admin/backups', [BackupController::class, 'index'])->name('admin.backups.index');
+            Route::post('/admin/backups/create', [BackupController::class, 'create'])->name('admin.backups.create');
+            Route::post('/admin/backups/upload', [BackupController::class, 'upload'])->name('admin.backups.upload');
+            Route::get('/admin/backups/{filename}/download', [BackupController::class, 'download'])->name('admin.backups.download');
+            Route::post('/admin/backups/{filename}/restore', [BackupController::class, 'restore'])->name('admin.backups.restore');
+            Route::delete('/admin/backups/{filename}', [BackupController::class, 'destroy'])->name('admin.backups.destroy');
         });
     });
     
