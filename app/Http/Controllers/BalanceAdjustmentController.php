@@ -26,6 +26,14 @@ class BalanceAdjustmentController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'note' => 'nullable|string',
             'adjusted_at' => 'nullable|date',
+        ], [
+            // Custom validation messages
+            'voucher_no.unique' => 'This voucher number has already been used. Please use a unique voucher number.',
+            'voucher_no.max' => 'Voucher number cannot exceed 255 characters.',
+            'amount.required' => 'Please enter the adjustment amount.',
+            'amount.numeric' => 'Adjustment amount must be a valid number.',
+            'amount.min' => 'Adjustment amount must be at least 0.01.',
+            'adjusted_at.date' => 'Please enter a valid adjustment date.',
         ]);
 
         DB::transaction(function () use ($debtor, $validated) {
@@ -33,9 +41,9 @@ class BalanceAdjustmentController extends Controller
 
             BalanceAdjustment::create([
                 'debtor_id' => $debtor->id,
-                'voucher_no' => $validated['voucher_no'],
+                'voucher_no' => $validated['voucher_no'] ?? null,
                 'amount' => $validated['amount'],
-                'note' => $validated['note'],
+                'note' => $validated['note'] ?? null,
                 'adjusted_at' => $validated['adjusted_at'] ?? now(),
             ]);
 

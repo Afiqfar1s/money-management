@@ -27,7 +27,23 @@ class CompanyController extends Controller
             'code' => ['nullable', 'string', 'max:50', 'unique:companies,code'],
             'address' => ['nullable', 'string'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'logo' => ['nullable', 'image', 'max:2048'],
+            'logo' => ['nullable', 'image', 'max:2048'],        ], [
+            // Custom validation messages
+            'name.required' => 'Please enter the company name.',
+            'name.max' => 'Company name cannot exceed 255 characters.',
+            'code.unique' => 'This company code is already in use. Please use a unique code.',
+            'code.max' => 'Company code cannot exceed 50 characters.',
+            'phone.max' => 'Phone number cannot exceed 50 characters.',
+            'logo.image' => 'Logo must be an image file (jpg, png, gif, etc.).',
+            'logo.max' => 'Logo file size cannot exceed 2MB.',        ], [
+            // Custom validation messages
+            'name.required' => 'Please enter the company name.',
+            'name.max' => 'Company name cannot exceed 255 characters.',
+            'code.unique' => 'This company code is already in use. Please use a unique code.',
+            'code.max' => 'Company code cannot exceed 50 characters.',
+            'phone.max' => 'Phone number cannot exceed 50 characters.',
+            'logo.image' => 'Logo must be an image file (jpg, png, gif, etc.).',
+            'logo.max' => 'Logo file size cannot exceed 2MB.',
         ]);
 
         $logoPath = null;
