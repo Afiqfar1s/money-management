@@ -71,7 +71,7 @@
                                 @if(auth()->user()->isAdmin())
                                 <!-- Admin Dropdown Menu -->
                                 <div x-data="{ adminOpen: false }" class="relative">
-                                    <button @click="adminOpen = !adminOpen" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('users.*') || request()->routeIs('companies.*') || request()->routeIs('sessions.*') || request()->routeIs('reports.*') ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
+                                    <button @click="adminOpen = !adminOpen" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('users.*') || request()->routeIs('companies.*') || request()->routeIs('sessions.*') || request()->routeIs('reports.*') || request()->routeIs('admin.backups.*') ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                         </svg>
@@ -118,6 +118,15 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
                                             All Transactions
+                                        </a>
+                                        
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                        
+                                        <a href="{{ route('admin.backups.index') }}" @click="adminOpen = false" class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('admin.backups.*') ? 'bg-purple-50 text-purple-700' : 'text-gray-700 hover:bg-gray-50' }} transition-colors">
+                                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                            </svg>
+                                            Database Backups
                                         </a>
                                     </div>
                                 </div>
