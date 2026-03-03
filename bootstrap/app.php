@@ -30,5 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handle CSRF token mismatch (expired sessions) - redirect to login
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Session expired. Please login again.'], 419);
+            }
+            return redirect()->route('login')->with('error', 'Your session has expired. Please login again.');
+        });
+        
+        // Handle unauthenticated users
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+            return redirect()->route('login')->with('error', 'Please login to continue.');
+        });
     })->create();
